@@ -166,7 +166,7 @@ function resolveBaseURL() {
   // Injeksi manual opsional
   const injected = (typeof window !== 'undefined' && window.__VITE_API_BASE__) || undefined;
 
-  const raw = vite || cli || injected || 'http://127.0.0.1:8000/api';
+  const raw = vite || cli || injected || 'http://localhost:8000';
   return String(raw).replace(/\/+$/, '');
 }
 
@@ -255,7 +255,7 @@ export default {
 
       try {
         // Panggil endpoint register Laravel (sesuai AuthController kamu)
-        const data = await apiFetch('/register', {
+        const data = await apiFetch('/api/register', {
           method: 'POST',
           body: JSON.stringify({
             name,

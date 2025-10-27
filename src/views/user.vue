@@ -174,7 +174,7 @@ function resolveBaseURL() {
   const cli =
     (typeof process !== "undefined" &&
       process.env &&
-      (process.env.VUE_APP_API_BASE || process.env.VITE_API_BASE)) ||
+      (process.env.VUE_APP_API_BASE || process.env.VUE_APP_API_BASE)) ||
     undefined;
 
   // Vite (via eval agar aman di Babel)
@@ -191,7 +191,7 @@ function resolveBaseURL() {
   const injected =
     (typeof window !== "undefined" && window.__VITE_API_BASE__) || undefined;
 
-  const raw = vite || cli || injected || "http://127.0.0.1:8000/api";
+  const raw = vite || cli || injected || "http://localhost:8000";
   return String(raw).replace(/\/+$/, "");
 }
 
