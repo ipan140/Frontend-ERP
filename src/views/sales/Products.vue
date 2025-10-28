@@ -4,7 +4,7 @@
     <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
       <div>
         <p class="uppercase text-xs text-gray-700 font-semibold">sales</p>
-        <h1 class="text-2xl text-gray-900 dark:text-gray-200 font-medium">Pricelists</h1>
+        <h1 class="text-2xl text-gray-900 dark:text-gray-200 font-medium">Products</h1>
       </div>
 
       <div class="flex gap-2">
@@ -12,7 +12,7 @@
           v-model="q.search"
           @keyup.enter="reload()"
           class="border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200"
-          placeholder="Search name/description…"
+          placeholder="Search SKU/Name…"
         />
         <button
           @click="reload()"
@@ -25,7 +25,7 @@
           class="bg-primary border flex gap-2 text-white hover:bg-primary/80 dark:border-gray-700 rounded py-2.5 px-5"
         >
           <span class="text-2xl">+</span>
-          <span>New Pricelist</span>
+          <span>New Product</span>
         </button>
       </div>
     </div>
@@ -44,31 +44,6 @@
               <option value="">All</option>
               <option value="1">Yes</option>
               <option value="0">No</option>
-            </select>
-          </div>
-
-          <div class="flex items-center gap-2">
-            <label class="text-sm dark:text-gray-300">Type</label>
-            <select
-              v-model="q.type"
-              @change="reload()"
-              class="border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200"
-            >
-              <option value="">All</option>
-              <option value="sale">sale</option>
-              <option value="purchase">purchase</option>
-            </select>
-          </div>
-
-          <div class="flex items-center gap-2">
-            <label class="text-sm dark:text-gray-300">Currency</label>
-            <select
-              v-model="q.currency"
-              @change="reload()"
-              class="border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200"
-            >
-              <option value="">All</option>
-              <option v-for="c in currencies" :key="c" :value="c">{{ c }}</option>
             </select>
           </div>
 
@@ -94,40 +69,51 @@
         <table class="min-w-full text-sm text-left text-gray-600 dark:text-gray-300">
           <thead class="text-xs uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
             <tr>
+              <th class="px-6 py-3">SKU</th>
               <th class="px-6 py-3">Name</th>
-              <th class="px-6 py-3">Type</th>
-              <th class="px-6 py-3">Currency</th>
-              <th class="px-6 py-3">Description</th>
-              <th class="px-6 py-3">Valid From</th>
-              <th class="px-6 py-3">Valid Until</th>
+              <th class="px-6 py-3">UoM</th>
+              <th class="px-6 py-3 text-right">Base Price</th>
               <th class="px-6 py-3">Active</th>
               <th class="px-6 py-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="r in rows" :key="r.id" class="bg-white dark:bg-gray-800 border-b dark:border-gray-700">
-              <td class="px-6 py-3 font-medium text-gray-800 dark:text-gray-100">{{ r.name }}</td>
-              <td class="px-6 py-3 uppercase">{{ r.type }}</td>
-              <td class="px-6 py-3">{{ r.currency }}</td>
-              <td class="px-6 py-3">{{ r.description || '-' }}</td>
-              <td class="px-6 py-3">{{ fmtDate(r.valid_from) || '—' }}</td>
-              <td class="px-6 py-3">{{ fmtDate(r.valid_until) || '—' }}</td>
+            <tr
+              v-for="r in rows"
+              :key="r.id"
+              class="bg-white dark:bg-gray-800 border-b dark:border-gray-700"
+            >
+              <td class="px-6 py-3 font-mono">{{ r.sku || ('PRD'+r.id) }}</td>
+              <td class="px-6 py-3">{{ r.name }}</td>
+              <td class="px-6 py-3">{{ r.uom || '-' }}</td>
+              <td class="px-6 py-3 text-right">Rp{{ formatNumber(r.base_price) }}</td>
               <td class="px-6 py-3">
-                <span v-if="r.active" class="px-2 py-1 text-xs rounded bg-green-100 text-green-700">Active</span>
-                <span v-else class="px-2 py-1 text-xs rounded bg-red-100 text-red-700">Inactive</span>
+                <span v-if="r.active"
+                      class="px-2 py-1 text-xs rounded bg-green-100 text-green-700">Active</span>
+                <span v-else
+                      class="px-2 py-1 text-xs rounded bg-red-100 text-red-700">Inactive</span>
               </td>
               <td class="px-6 py-3 text-right">
-                <button @click="openEdit(r)" class="px-2 py-1 rounded border dark:border-gray-600 mr-2" title="Edit">
+                <button
+                  @click="openEdit(r)"
+                  class="px-2 py-1 rounded border dark:border-gray-600 mr-2"
+                  title="Edit"
+                >
                   Edit
                 </button>
-                <button @click="confirmDelete(r)" class="px-2 py-1 rounded border dark:border-gray-600" title="Delete">
+                <button
+                  @click="confirmDelete(r)"
+                  class="px-2 py-1 rounded border dark:border-gray-600"
+                  :disabled="saving"
+                  title="Delete"
+                >
                   Delete
                 </button>
               </td>
             </tr>
 
             <tr v-if="!loading && !rows.length">
-              <td colspan="8" class="px-6 py-6 text-center text-gray-400">No data</td>
+              <td colspan="6" class="px-6 py-6 text-center text-gray-400">No data</td>
             </tr>
           </tbody>
         </table>
@@ -159,12 +145,20 @@
     <div v-if="modal.open" class="fixed inset-0 z-50 flex items-center justify-center">
       <div class="absolute inset-0 bg-black/40" @click="modal.open = false"></div>
 
-      <div class="relative bg-white dark:bg-gray-800 rounded-md border dark:border-gray-700 w-full max-w-2xl p-5">
+      <div
+        class="relative bg-white dark:bg-gray-800 rounded-md border dark:border-gray-700 w-full max-w-2xl p-5"
+      >
         <h3 class="text-lg font-semibold mb-4 dark:text-gray-200">
-          {{ modal.mode === 'create' ? 'New Pricelist' : 'Edit Pricelist' }}
+          {{ modal.mode === 'create' ? 'New Product' : 'Edit Product' }}
         </h3>
 
         <div class="grid md:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm mb-1 dark:text-gray-300">SKU<span class="text-red-500">*</span></label>
+            <input v-model="form.sku" class="w-full border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200" />
+            <p v-if="fieldErrors.sku" class="text-xs text-red-500 mt-1">{{ fieldErrors.sku[0] }}</p>
+          </div>
+
           <div>
             <label class="block text-sm mb-1 dark:text-gray-300">Name<span class="text-red-500">*</span></label>
             <input v-model="form.name" class="w-full border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200" />
@@ -172,37 +166,17 @@
           </div>
 
           <div>
-            <label class="block text-sm mb-1 dark:text-gray-300">Type<span class="text-red-500">*</span></label>
-            <select v-model="form.type" class="w-full border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200">
-              <option value="sale">sale</option>
-              <option value="purchase">purchase</option>
-            </select>
+            <label class="block text-sm mb-1 dark:text-gray-300">UoM</label>
+            <input v-model="form.uom" class="w-full border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200" placeholder="pcs / botol / paket / kg …" />
           </div>
 
           <div>
-            <label class="block text-sm mb-1 dark:text-gray-300">Currency<span class="text-red-500">*</span></label>
-            <select v-model="form.currency" class="w-full border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200">
-              <option v-for="c in currencies" :key="c" :value="c">{{ c }}</option>
-            </select>
+            <label class="block text-sm mb-1 dark:text-gray-300">Base Price (Rp)<span class="text-red-500">*</span></label>
+            <input type="number" min="0" step="1" v-model.number="form.base_price" class="w-full border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200" />
+            <p v-if="fieldErrors.base_price" class="text-xs text-red-500 mt-1">{{ fieldErrors.base_price[0] }}</p>
           </div>
 
-          <div>
-            <label class="block text-sm mb-1 dark:text-gray-300">Valid From<span class="text-red-500">*</span></label>
-            <input type="date" v-model="form.valid_from" class="w-full border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200" />
-          </div>
-
-          <div>
-            <label class="block text-sm mb-1 dark:text-gray-300">Valid Until</label>
-            <input type="date" v-model="form.valid_until" class="w-full border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200" />
-            <p class="text-xs text-gray-500 mt-1">Kosongkan bila tidak dibatasi (NULL).</p>
-          </div>
-
-          <div class="md:col-span-2">
-            <label class="block text-sm mb-1 dark:text-gray-300">Description</label>
-            <textarea v-model="form.description" rows="3" class="w-full border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200"></textarea>
-          </div>
-
-          <div class="flex items-center gap-2 mt-2 md:col-span-2">
+          <div class="md:col-span-2 flex items-center gap-2 mt-2">
             <input id="active" type="checkbox" v-model="form.active" class="w-4 h-4 rounded border dark:border-gray-600 dark:bg-gray-800" />
             <label for="active" class="text-sm dark:text-gray-300">Active</label>
           </div>
@@ -218,6 +192,11 @@
         </div>
       </div>
     </div>
+
+    <!-- Error toast -->
+    <div v-if="error" class="fixed bottom-4 right-4 bg-red-600 text-white text-sm px-4 py-3 rounded shadow">
+      {{ error }}
+    </div>
   </div>
 </template>
 
@@ -225,25 +204,21 @@
 import axios from "axios";
 
 export default {
-  name: "Pricelists",
+  name: "Products",
   data() {
     return {
       loading: false,
       rows: [],
-      q: { page: 1, perPage: 10, search: "", active: "", type: "", currency: "" },
+      q: { page: 1, perPage: 10, search: "", active: "" },
       page: { current: 1, last: 1, total: 0, from: 0, to: 0, prev: false, next: false },
-
-      currencies: ["IDR", "USD", "EUR", "SGD", "JPY"],
 
       modal: { open: false, mode: "create" },
       form: {
         id: null,
+        sku: "",
         name: "",
-        type: "sale",
-        currency: "IDR",
-        description: "",
-        valid_from: "",
-        valid_until: "",
+        uom: "",
+        base_price: 0,
         active: true,
       },
 
@@ -258,6 +233,7 @@ export default {
   },
 
   methods: {
+    /* ========= Axios base ========= */
     resolveBaseUrl() {
       const raw =
         import.meta?.env?.VITE_API_BASE ||
@@ -265,11 +241,9 @@ export default {
         "http://localhost:8000";
       return String(raw).trim().replace(/\/+$/, "");
     },
-
     api() {
       const token = localStorage.getItem("token");
       const API_BASE = this.resolveBaseUrl();
-
       const instance = axios.create({
         baseURL: `${API_BASE}/api`,
         headers: {
@@ -277,7 +251,6 @@ export default {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
       });
-
       instance.interceptors.response.use(
         (res) => res,
         (err) => {
@@ -292,34 +265,18 @@ export default {
       return instance;
     },
 
-    fmtDate(d) {
-      if (!d) return "";
-      // Terima "YYYY-MM-DD" atau "YYYY-MM-DD HH:MM:SS"
-      return String(d).slice(0, 10);
+    /* ========= Helpers ========= */
+    formatNumber(n) {
+      return Number(n || 0).toLocaleString("id-ID");
     },
-
     cleanParams(raw) {
-      // Hapus nilai kosong & hanya kirim active jika '0' atau '1'
       const p = { ...raw };
       if (p.active !== "0" && p.active !== "1") delete p.active;
-      if (!p.type) delete p.type;
-      if (!p.currency) delete p.currency;
       if (!String(p.search || "").trim()) delete p.search;
       return p;
     },
 
-    toPayload() {
-      return {
-        name: (this.form.name || "").trim(),
-        type: this.form.type,
-        currency: this.form.currency,
-        description: (this.form.description || "").trim() || null,
-        valid_from: this.form.valid_from || null,
-        valid_until: this.form.valid_until || null,
-        active: this.form.active ? 1 : 0,
-      };
-    },
-
+    /* ========= Load ========= */
     async reload() {
       this.loading = true;
       this.error = "";
@@ -329,16 +286,15 @@ export default {
           page: this.q.page,
           per_page: this.q.perPage,
           search: this.q.search,
-          active: this.q.active,   // "" | "1" | "0"
-          type: this.q.type,
-          currency: this.q.currency,
+          active: this.q.active, // "" | "1" | "0"
         });
 
-        const { data } = await this.api().get("/pricelists", { params });
+        const { data } = await this.api().get("/products", { params });
 
         const rows = Array.isArray(data?.data) ? data.data : [];
         this.rows = rows.map((r) => ({
           ...r,
+          base_price: Number(r.base_price || 0),
           active: r.active === 1 || r.active === "1" || r.active === true,
         }));
 
@@ -352,72 +308,84 @@ export default {
           next: Number(data.current_page || 1) < Number(data.last_page || 1),
         };
       } catch (e) {
-        this.error = e?.response?.data?.message || "Gagal memuat data pricelist";
+        this.error = e?.response?.data?.message || "Gagal memuat data produk";
       } finally {
         this.loading = false;
       }
     },
 
+    /* ========= Pagination ========= */
     go(p) {
       this.q.page = Math.max(1, p);
       this.reload();
     },
 
+    /* ========= Modal ========= */
     openCreate() {
       this.modal = { open: true, mode: "create" };
       this.error = "";
       this.fieldErrors = {};
-      const today = new Date().toISOString().slice(0, 10);
       this.form = {
         id: null,
+        sku: "",
         name: "",
-        type: "sale",
-        currency: "IDR",
-        description: "",
-        valid_from: today,
-        valid_until: "",
+        uom: "",
+        base_price: 0,
         active: true,
       };
     },
-
     openEdit(row) {
       this.modal = { open: true, mode: "edit" };
       this.error = "";
       this.fieldErrors = {};
       this.form = {
         id: row.id,
+        sku: row.sku || "",
         name: row.name || "",
-        type: row.type || "sale",
-        currency: row.currency || "IDR",
-        description: row.description || "",
-        valid_from: this.fmtDate(row.valid_from) || "",
-        valid_until: this.fmtDate(row.valid_until) || "",
+        uom: row.uom || "",
+        base_price: Number(row.base_price || 0),
         active: !!row.active,
       };
     },
 
+    toPayload() {
+      return {
+        sku: (this.form.sku || "").trim(),
+        name: (this.form.name || "").trim(),
+        uom: (this.form.uom || "").trim() || null,
+        base_price: Number(this.form.base_price || 0),
+        active: this.form.active ? 1 : 0,
+      };
+    },
+
+    /* ========= Save ========= */
     async save() {
       this.saving = true;
       this.error = "";
       this.fieldErrors = {};
 
+      if (!String(this.form.sku || "").trim()) {
+        this.saving = false;
+        this.error = "SKU wajib diisi.";
+        return;
+      }
       if (!String(this.form.name || "").trim()) {
         this.saving = false;
         this.error = "Name wajib diisi.";
         return;
       }
-      if (!this.form.valid_from) {
+      if (Number(this.form.base_price) < 0) {
         this.saving = false;
-        this.error = "Valid From wajib diisi.";
+        this.error = "Base price tidak boleh negatif.";
         return;
       }
 
       try {
         const payload = this.toPayload();
         if (this.modal.mode === "create") {
-          await this.api().post("/pricelists", payload);
+          await this.api().post("/products", payload);
         } else {
-          await this.api().put(`/pricelists/${this.form.id}`, payload);
+          await this.api().put(`/products/${this.form.id}`, payload);
         }
         this.modal.open = false;
         await this.reload();
@@ -429,20 +397,24 @@ export default {
             e.response.data?.message ||
             "Validasi gagal";
         } else {
-          this.error = e?.response?.data?.message || "Gagal menyimpan pricelist";
+          this.error = e?.response?.data?.message || "Gagal menyimpan produk";
         }
       } finally {
         this.saving = false;
       }
     },
 
+    /* ========= Delete ========= */
     async confirmDelete(row) {
-      if (!confirm(`Hapus pricelist "${row.name}"?`)) return;
+      if (!confirm(`Hapus produk "${row.name}"?`)) return;
+      this.saving = true; this.error = "";
       try {
-        await this.api().delete(`/pricelists/${row.id}`);
+        await this.api().delete(`/products/${row.id}`);
         await this.reload();
       } catch (e) {
-        this.error = e?.response?.data?.message || "Gagal menghapus pricelist";
+        this.error = e?.response?.data?.message || "Gagal menghapus produk";
+      } finally {
+        this.saving = false;
       }
     },
   },

@@ -38,30 +38,94 @@
               to="/"
               exact
               class="w-full flex text-left rounded-md box-border p-3 hover:bg-gray-200 dark:hover:bg-gray-700"
+              :class="isActiveExact('/') ? 'bg-gray-200 dark:bg-gray-700' : ''"
+              @click.native="closeOnMobile"
             >
               <span class="mr-3 text-xl"><Icon icon="bxs:dashboard" /></span>
               <span class="w-full">Dashboard</span>
             </router-link>
           </div>
 
-          <!-- ====== Sales (tanpa counts) ====== -->
+          <!-- ====== Sales ====== -->
           <div class="item mt-3">
             <menu-accordion>
               <template #icon><Icon icon="mdi:cart-outline" /></template>
               <template #title>
                 <div class="w-full flex items-center justify-between">
-                  <span>Sales</span>
+                  <span :class="startsWith('/sales') ? 'text-primary font-semibold' : ''">Sales</span>
                 </div>
               </template>
+
               <template #content>
-                <!-- ✅ Tambahan: Overview → menuju halaman grid modul Sales -->
-                <router-link to="/sales" class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">
+                <!-- Overview -->
+                <router-link
+                  to="/sales"
+                  class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700"
+                  :class="isActiveExact('/sales') ? 'bg-gray-200 dark:bg-gray-700' : ''"
+                  @click.native="closeOnMobile"
+                >
                   Overview
                 </router-link>
 
-                <router-link to="/sales/quotations" class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Quotations</router-link>
-                <router-link to="/sales/orders"     class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Sales Orders</router-link>
-                <router-link to="/sales/customers"  class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Customers</router-link>
+                <!-- Products -->
+                <router-link
+                  to="/sales/products"
+                  class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700"
+                  :class="startsWith('/sales/products') ? 'bg-gray-200 dark:bg-gray-700' : ''"
+                  @click.native="closeOnMobile"
+                >
+                  Products
+                </router-link>
+
+                <!-- Quotations (flat) -->
+                <router-link
+                  to="/sales/quotations"
+                  class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700"
+                  :class="startsWith('/sales/quotations') ? 'bg-gray-200 dark:bg-gray-700' : ''"
+                  @click.native="closeOnMobile"
+                >
+                  Quotations
+                </router-link>
+
+                <!-- Invoices (NEW) -->
+                <router-link
+                  to="/sales/invoices"
+                  class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700"
+                  :class="startsWith('/sales/invoices') ? 'bg-gray-200 dark:bg-gray-700' : ''"
+                  @click.native="closeOnMobile"
+                >
+                  Invoices
+                </router-link>
+
+                <!-- Sales Orders -->
+                <router-link
+                  to="/sales/orders"
+                  class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700"
+                  :class="startsWith('/sales/orders') ? 'bg-gray-200 dark:bg-gray-700' : ''"
+                  @click.native="closeOnMobile"
+                >
+                  Sales Orders
+                </router-link>
+
+                <!-- Customers -->
+                <router-link
+                  to="/sales/customers"
+                  class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700"
+                  :class="startsWith('/sales/customers') ? 'bg-gray-200 dark:bg-gray-700' : ''"
+                  @click.native="closeOnMobile"
+                >
+                  Customers
+                </router-link>
+
+                <!-- Pricelists -->
+                <router-link
+                  to="/sales/pricelists"
+                  class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700"
+                  :class="startsWith('/sales/pricelists') ? 'bg-gray-200 dark:bg-gray-700' : ''"
+                  @click.native="closeOnMobile"
+                >
+                  Pricelists
+                </router-link>
               </template>
             </menu-accordion>
           </div>
@@ -76,11 +140,11 @@
                 </div>
               </template>
               <template #content>
-                <router-link to="/website/builder"  class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Page Builder</router-link>
-                <router-link to="/website/blog"     class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Blog</router-link>
-                <router-link to="/website/media"    class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Media</router-link>
-                <router-link to="/website/themes"   class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Themes</router-link>
-                <router-link to="/website/settings" class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Settings</router-link>
+                <router-link to="/website/builder"  class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Page Builder</router-link>
+                <router-link to="/website/blog"     class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Blog</router-link>
+                <router-link to="/website/media"    class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Media</router-link>
+                <router-link to="/website/themes"   class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Themes</router-link>
+                <router-link to="/website/settings" class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Settings</router-link>
               </template>
             </menu-accordion>
           </div>
@@ -95,11 +159,11 @@
                 </div>
               </template>
               <template #content>
-                <router-link to="/services/projects"      class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Projects</router-link>
-                <router-link to="/services/timesheets"    class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Timesheets</router-link>
-                <router-link to="/services/field-service" class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Field Service</router-link>
-                <router-link to="/services/helpdesk"      class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Helpdesk</router-link>
-                <router-link to="/services/appointments"  class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Appointments</router-link>
+                <router-link to="/services/projects"      class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Projects</router-link>
+                <router-link to="/services/timesheets"    class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Timesheets</router-link>
+                <router-link to="/services/field-service" class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Field Service</router-link>
+                <router-link to="/services/helpdesk"      class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Helpdesk</router-link>
+                <router-link to="/services/appointments"  class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Appointments</router-link>
               </template>
             </menu-accordion>
           </div>
@@ -114,9 +178,9 @@
                 </div>
               </template>
               <template #content>
-                <router-link to="/accounting/invoicing"      class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Invoicing</router-link>
-                <router-link to="/accounting/general-ledger" class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">General Ledger</router-link>
-                <router-link to="/accounting/bank-reconcile" class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Bank Reconcile</router-link>
+                <router-link to="/accounting/invoicing"      class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Invoicing</router-link>
+                <router-link to="/accounting/general-ledger" class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">General Ledger</router-link>
+                <router-link to="/accounting/bank-reconcile" class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Bank Reconcile</router-link>
               </template>
             </menu-accordion>
           </div>
@@ -131,14 +195,14 @@
                 </div>
               </template>
               <template #content>
-                <router-link to="/scm/purchase"     class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Purchase</router-link>
-                <router-link to="/scm/inventory"    class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Inventory</router-link>
-                <router-link to="/scm/wms"          class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">WMS</router-link>
-                <router-link to="/scm/mrp"          class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Manufacturing</router-link>
-                <router-link to="/scm/plm"          class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">PLM</router-link>
-                <router-link to="/scm/quality"      class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Quality</router-link>
-                <router-link to="/scm/maintenance"  class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Maintenance</router-link>
-                <router-link to="/scm/repairs"      class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Repairs</router-link>
+                <router-link to="/scm/purchase"     class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Purchase</router-link>
+                <router-link to="/scm/inventory"    class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Inventory</router-link>
+                <router-link to="/scm/wms"          class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">WMS</router-link>
+                <router-link to="/scm/mrp"          class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Manufacturing</router-link>
+                <router-link to="/scm/plm"          class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">PLM</router-link>
+                <router-link to="/scm/quality"      class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Quality</router-link>
+                <router-link to="/scm/maintenance"  class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Maintenance</router-link>
+                <router-link to="/scm/repairs"      class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Repairs</router-link>
               </template>
             </menu-accordion>
           </div>
@@ -168,13 +232,13 @@
                 </div>
               </template>
               <template #content>
-                <router-link to="/marketing/email"       class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Email</router-link>
-                <router-link to="/marketing/automation"  class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Automation</router-link>
-                <router-link to="/marketing/sms"         class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">SMS & Social</router-link>
-                <router-link to="/marketing/events"      class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Events</router-link>
-                <router-link to="/marketing/surveys"     class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Surveys</router-link>
-                <router-link to="/marketing/campaigns"   class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Campaigns</router-link>
-                <router-link to="/marketing/reports"     class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Reports</router-link>
+                <router-link to="/marketing/email"       class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Email</router-link>
+                <router-link to="/marketing/automation"  class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hoverbg-gray-700" @click.native="closeOnMobile">Automation</router-link>
+                <router-link to="/marketing/sms"         class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">SMS & Social</router-link>
+                <router-link to="/marketing/events"      class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Events</router-link>
+                <router-link to="/marketing/surveys"     class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Surveys</router-link>
+                <router-link to="/marketing/campaigns"   class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Campaigns</router-link>
+                <router-link to="/marketing/reports"     class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Reports</router-link>
               </template>
             </menu-accordion>
           </div>
@@ -189,20 +253,20 @@
                 </div>
               </template>
               <template #content>
-                <router-link to="/hr/employees"    class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Employees</router-link>
-                <router-link to="/hr/recruitment"  class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Recruitment</router-link>
-                <router-link to="/hr/attendance"   class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Attendance</router-link>
-                <router-link to="/hr/time-off"     class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Time Off</router-link>
-                <router-link to="/hr/payroll"      class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Payroll</router-link>
-                <router-link to="/hr/appraisals"   class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Appraisals</router-link>
-                <router-link to="/hr/okr"          class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">OKR</router-link>
-                <router-link to="/hr/fleet"        class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Fleet</router-link>
-                <router-link to="/hr/contracts"    class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Contracts</router-link>
-                <router-link to="/hr/benefits"     class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Benefits</router-link>
-                <router-link to="/hr/disciplinary" class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Disciplinary</router-link>
-                <router-link to="/hr/training"     class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Training</router-link>
-                <router-link to="/hr/calendar"     class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Calendar</router-link>
-                <router-link to="/hr/reports"      class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Reports</router-link>
+                <router-link to="/hr/employees"    class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Employees</router-link>
+                <router-link to="/hr/recruitment"  class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Recruitment</router-link>
+                <router-link to="/hr/attendance"   class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Attendance</router-link>
+                <router-link to="/hr/time-off"     class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Time Off</router-link>
+                <router-link to="/hr/payroll"      class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Payroll</router-link>
+                <router-link to="/hr/appraisals"   class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Appraisals</router-link>
+                <router-link to="/hr/okr"          class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">OKR</router-link>
+                <router-link to="/hr/fleet"        class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Fleet</router-link>
+                <router-link to="/hr/contracts"    class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Contracts</router-link>
+                <router-link to="/hr/benefits"     class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Benefits</router-link>
+                <router-link to="/hr/disciplinary" class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Disciplinary</router-link>
+                <router-link to="/hr/training"     class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Training</router-link>
+                <router-link to="/hr/calendar"     class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Calendar</router-link>
+                <router-link to="/hr/reports"      class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Reports</router-link>
               </template>
             </menu-accordion>
           </div>
@@ -247,7 +311,7 @@
                 </div>
               </template>
               <template #content>
-                <router-link to="/customizations/studio" class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Studio</router-link>
+                <router-link to="/customizations/studio" class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Studio</router-link>
               </template>
             </menu-accordion>
           </div>
@@ -262,12 +326,12 @@
                 </div>
               </template>
               <template #content>
-                <router-link to="/admin/settings" class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Settings</router-link>
+                <router-link to="/admin/settings" class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Settings</router-link>
               </template>
             </menu-accordion>
           </div>
 
-          <!-- Layouts (kode lama dipertahankan) -->
+          <!-- Layouts -->
           <div class="item mt-3">
             <menu-accordion>
               <template #icon><Icon icon="ri:layout-2-fill" /></template>
@@ -278,31 +342,31 @@
             </menu-accordion>
           </div>
 
-          <!-- Pages (kode lama dipertahankan) -->
+          <!-- Pages -->
           <div class="item mt-3">
             <menu-accordion>
               <template #icon><Icon icon="ri:pages-fill" /></template>
               <template #title>Pages</template>
               <template #content>
                 <div>
-                  <router-link to="/blank" class="w-full text-left block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Blank Page</router-link>
-                  <router-link to="/users" class="w-full text-left block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Users</router-link>
+                  <router-link to="/blank" class="w-full text-left block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Blank Page</router-link>
+                  <router-link to="/users" class="w-full text-left block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Users</router-link>
 
                   <menu-accordion>
                     <template #title>Error Page</template>
                     <template #content>
-                      <router-link to="/404page"     class="w-full text-left block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">404 page</router-link>
-                      <router-link to="/500"         class="w-full text-left block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">500 page</router-link>
-                      <router-link to="/maintenance" class="w-full text-left block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Maintenance page</router-link>
+                      <router-link to="/404page"     class="w-full text-left block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">404 page</router-link>
+                      <router-link to="/500"         class="w-full text-left block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">500 page</router-link>
+                      <router-link to="/maintenance" class="w-full text-left block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Maintenance page</router-link>
                     </template>
                   </menu-accordion>
 
                   <menu-accordion>
                     <template #title>Authentication</template>
                     <template #content>
-                      <router-link to="/auth/login"           class="w-full text-left block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Login</router-link>
-                      <router-link to="/auth/register"        class="w-full text-left block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Register</router-link>
-                      <router-link to="/auth/forgot-password" class="w-full text-left block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Forgot Password</router-link>
+                      <router-link to="/auth/login"           class="w-full text-left block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Login</router-link>
+                      <router-link to="/auth/register"        class="w-full text-left block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Register</router-link>
+                      <router-link to="/auth/forgot-password" class="w-full text-left block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Forgot Password</router-link>
                     </template>
                   </menu-accordion>
                 </div>
@@ -327,7 +391,7 @@
         </div>
 
         <div class="item mt-3">
-          <router-link to="/tables">
+          <router-link to="/tables" @click.native="closeOnMobile">
             <button
               class="text-gray-800 dark:text-gray-500 bg-transparent hover:bg-gray-200 dark:hover:bg-gray-700 w-full flex text-left rounded-md box-border p-3"
             >
@@ -338,20 +402,20 @@
           </router-link>
         </div>
 
-        <!-- Components (kode lama dipertahankan) -->
+        <!-- Components -->
         <div class="item mt-3">
           <menu-accordion>
             <template #icon><Icon icon="gg:components" /></template>
             <template #title>Components</template>
             <template #content>
-              <router-link to="/component/alert"     class="w-full text-left block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Alert</router-link>
-              <router-link to="/component/accordion" class="w-full text-left block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Accordion</router-link>
-              <router-link to="/component/badge"     class="w-full text-left block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Badge</router-link>
-              <router-link to="/component/breadcumb" class="w-full text-left block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Breadcumb</router-link>
-              <router-link to="/component/button"    class="w-full text-left block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Button</router-link>
-              <router-link to="/component/card"      class="w-full text-left block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Card</router-link>
-              <router-link to="/component/dropdown"  class="w-full text-left block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Dropdown</router-link>
-              <router-link to="/component/modal"     class="w-full text-left block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700">Modal</router-link>
+              <router-link to="/component/alert"     class="w-full text-left block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Alert</router-link>
+              <router-link to="/component/accordion" class="w-full text-left block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Accordion</router-link>
+              <router-link to="/component/badge"     class="w-full text-left block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Badge</router-link>
+              <router-link to="/component/breadcumb" class="w-full text-left block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Breadcumb</router-link>
+              <router-link to="/component/button"    class="w-full text-left block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Button</router-link>
+              <router-link to="/component/card"      class="w-full text-left block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Card</router-link>
+              <router-link to="/component/dropdown"  class="w-full text-left block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Dropdown</router-link>
+              <router-link to="/component/modal"     class="w-full text-left block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Modal</router-link>
             </template>
           </menu-accordion>
         </div>
@@ -365,6 +429,18 @@ import { Icon } from "@iconify/vue";
 import MenuAccordion from "./MenuAccordion.vue";
 
 export default {
+  name: "Sidebar",
   components: { Icon, MenuAccordion },
+  methods: {
+    startsWith(prefix) {
+      return this.$route.path.startsWith(prefix);
+    },
+    isActiveExact(path) {
+      return this.$route.path === path;
+    },
+    closeOnMobile() {
+      this.$emit("sidebarToggle");
+    },
+  },
 };
 </script>
