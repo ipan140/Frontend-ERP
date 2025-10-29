@@ -7,7 +7,7 @@
         <h1 class="text-2xl text-gray-900 dark:text-gray-200 font-medium">Products</h1>
       </div>
 
-      <div class="flex gap-2">
+      <div class="flex flex-wrap gap-2">
         <input
           v-model="q.search"
           @keyup.enter="reload()"
@@ -22,9 +22,9 @@
         </button>
         <button
           @click="openCreate()"
-          class="bg-primary border flex gap-2 text-white hover:bg-primary/80 dark:border-gray-700 rounded py-2.5 px-5"
+          class="bg-primary border flex items-center gap-2 text-white hover:bg-primary/80 dark:border-gray-700 rounded py-2.5 px-5"
         >
-          <span class="text-2xl">+</span>
+          <span class="text-xl leading-none">＋</span>
           <span>New Product</span>
         </button>
       </div>
@@ -93,10 +93,17 @@
                 <span v-else
                       class="px-2 py-1 text-xs rounded bg-red-100 text-red-700">Inactive</span>
               </td>
-              <td class="px-6 py-3 text-right">
+              <td class="px-6 py-3 text-right space-x-2">
+                <button
+                  @click="openView(r)"
+                  class="px-2 py-1 rounded border dark:border-gray-600"
+                  title="View"
+                >
+                  View
+                </button>
                 <button
                   @click="openEdit(r)"
-                  class="px-2 py-1 rounded border dark:border-gray-600 mr-2"
+                  class="px-2 py-1 rounded border dark:border-gray-600"
                   title="Edit"
                 >
                   Edit
@@ -141,13 +148,56 @@
       </div>
     </div>
 
-    <!-- Modal -->
+    <!-- View Modal (read-only) -->
+    <div v-if="view.open" class="fixed inset-0 z-50 flex items-center justify-center">
+      <div class="absolute inset-0 bg-black/40" @click="view.open = false"></div>
+      <div class="relative bg-white dark:bg-gray-800 rounded-md border dark:border-gray-700 w-full max-w-xl p-6">
+        <div class="flex items-start justify-between">
+          <h3 class="text-lg font-semibold dark:text-gray-200">Product Details</h3>
+          <button class="px-3 py-1 rounded border dark:border-gray-600" @click="view.open=false">Close</button>
+        </div>
+
+        <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
+          <div>
+            <div class="text-gray-500 dark:text-gray-400">SKU</div>
+            <div class="font-medium">{{ view.row.sku || '-' }}</div>
+          </div>
+          <div>
+            <div class="text-gray-500 dark:text-gray-400">Name</div>
+            <div class="font-medium">{{ view.row.name || '-' }}</div>
+          </div>
+          <div>
+            <div class="text-gray-500 dark:text-gray-400">UoM</div>
+            <div class="font-medium">{{ view.row.uom || '-' }}</div>
+          </div>
+          <div>
+            <div class="text-gray-500 dark:text-gray-400">Base Price</div>
+            <div class="font-medium">Rp{{ formatNumber(view.row.base_price) }}</div>
+          </div>
+          <div>
+            <div class="text-gray-500 dark:text-gray-400">Active</div>
+            <div class="font-medium">
+              <span v-if="view.row.active" class="px-2 py-1 text-xs rounded bg-green-100 text-green-700">Active</span>
+              <span v-else class="px-2 py-1 text-xs rounded bg-red-100 text-red-700">Inactive</span>
+            </div>
+          </div>
+          <div v-if="view.extra.created_at">
+            <div class="text-gray-500 dark:text-gray-400">Created</div>
+            <div class="font-medium">{{ view.extra.created_at }}</div>
+          </div>
+          <div v-if="view.extra.updated_at">
+            <div class="text-gray-500 dark:text-gray-400">Updated</div>
+            <div class="font-medium">{{ view.extra.updated_at }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit/Create Modal -->
     <div v-if="modal.open" class="fixed inset-0 z-50 flex items-center justify-center">
       <div class="absolute inset-0 bg-black/40" @click="modal.open = false"></div>
 
-      <div
-        class="relative bg-white dark:bg-gray-800 rounded-md border dark:border-gray-700 w-full max-w-2xl p-5"
-      >
+      <div class="relative bg-white dark:bg-gray-800 rounded-md border dark:border-gray-700 w-full max-w-2xl p-5">
         <h3 class="text-lg font-semibold mb-4 dark:text-gray-200">
           {{ modal.mode === 'create' ? 'New Product' : 'Edit Product' }}
         </h3>
@@ -193,7 +243,7 @@
       </div>
     </div>
 
-    <!-- Error toast -->
+    <!-- Fallback toast -->
     <div v-if="error" class="fixed bottom-4 right-4 bg-red-600 text-white text-sm px-4 py-3 rounded shadow">
       {{ error }}
     </div>
@@ -202,6 +252,7 @@
 
 <script>
 import axios from "axios";
+import Swal from "sweetalert2";
 
 export default {
   name: "Products",
@@ -212,15 +263,12 @@ export default {
       q: { page: 1, perPage: 10, search: "", active: "" },
       page: { current: 1, last: 1, total: 0, from: 0, to: 0, prev: false, next: false },
 
+      /* View state */
+      view: { open: false, row: {}, extra: {} },
+
+      /* Edit/Create state */
       modal: { open: false, mode: "create" },
-      form: {
-        id: null,
-        sku: "",
-        name: "",
-        uom: "",
-        base_price: 0,
-        active: true,
-      },
+      form: { id: null, sku: "", name: "", uom: "", base_price: 0, active: true },
 
       saving: false,
       error: "",
@@ -233,7 +281,17 @@ export default {
   },
 
   methods: {
-    /* ========= Axios base ========= */
+    toast(icon, title) {
+      const T = Swal.mixin({
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 1800,
+        timerProgressBar: true,
+      });
+      T.fire({ icon, title });
+    },
+
     resolveBaseUrl() {
       const raw =
         import.meta?.env?.VITE_API_BASE ||
@@ -246,10 +304,7 @@ export default {
       const API_BASE = this.resolveBaseUrl();
       const instance = axios.create({
         baseURL: `${API_BASE}/api`,
-        headers: {
-          Accept: "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
+        headers: { Accept: "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       });
       instance.interceptors.response.use(
         (res) => res,
@@ -265,10 +320,7 @@ export default {
       return instance;
     },
 
-    /* ========= Helpers ========= */
-    formatNumber(n) {
-      return Number(n || 0).toLocaleString("id-ID");
-    },
+    formatNumber(n) { return Number(n || 0).toLocaleString("id-ID"); },
     cleanParams(raw) {
       const p = { ...raw };
       if (p.active !== "0" && p.active !== "1") delete p.active;
@@ -276,28 +328,20 @@ export default {
       return p;
     },
 
-    /* ========= Load ========= */
+    /* Load */
     async reload() {
-      this.loading = true;
-      this.error = "";
-      this.fieldErrors = {};
+      this.loading = true; this.error = ""; this.fieldErrors = {};
       try {
         const params = this.cleanParams({
-          page: this.q.page,
-          per_page: this.q.perPage,
-          search: this.q.search,
-          active: this.q.active, // "" | "1" | "0"
+          page: this.q.page, per_page: this.q.perPage, search: this.q.search, active: this.q.active,
         });
-
         const { data } = await this.api().get("/products", { params });
-
         const rows = Array.isArray(data?.data) ? data.data : [];
         this.rows = rows.map((r) => ({
           ...r,
           base_price: Number(r.base_price || 0),
           active: r.active === 1 || r.active === "1" || r.active === true,
         }));
-
         this.page = {
           current: Number(data.current_page || 1),
           last: Number(data.last_page || 1),
@@ -309,35 +353,49 @@ export default {
         };
       } catch (e) {
         this.error = e?.response?.data?.message || "Gagal memuat data produk";
-      } finally {
-        this.loading = false;
+        this.toast("error", this.error);
+      } finally { this.loading = false; }
+    },
+
+    /* Pagination */
+    go(p) { this.q.page = Math.max(1, p); this.reload(); },
+
+    /* View */
+    async openView(row) {
+      // kalau ada endpoint show /products/:id, ambil detail/relasi; else tampilkan data row
+      try {
+        const { data } = await this.api().get(`/products/${row.id}`);
+        const r = data?.data || data || row;
+        this.view = {
+          open: true,
+          row: {
+            id: r.id,
+            sku: r.sku,
+            name: r.name,
+            uom: r.uom,
+            base_price: Number(r.base_price || 0),
+            active: r.active === 1 || r.active === "1" || r.active === true,
+          },
+          extra: {
+            created_at: r.created_at || null,
+            updated_at: r.updated_at || null,
+          },
+        };
+      } catch {
+        // fallback kalau /show tidak ada
+        this.view = { open: true, row, extra: {} };
       }
     },
 
-    /* ========= Pagination ========= */
-    go(p) {
-      this.q.page = Math.max(1, p);
-      this.reload();
-    },
-
-    /* ========= Modal ========= */
+    /* Modal Edit/Create */
     openCreate() {
       this.modal = { open: true, mode: "create" };
-      this.error = "";
-      this.fieldErrors = {};
-      this.form = {
-        id: null,
-        sku: "",
-        name: "",
-        uom: "",
-        base_price: 0,
-        active: true,
-      };
+      this.error = ""; this.fieldErrors = {};
+      this.form = { id: null, sku: "", name: "", uom: "", base_price: 0, active: true };
     },
     openEdit(row) {
       this.modal = { open: true, mode: "edit" };
-      this.error = "";
-      this.fieldErrors = {};
+      this.error = ""; this.fieldErrors = {};
       this.form = {
         id: row.id,
         sku: row.sku || "",
@@ -358,64 +416,60 @@ export default {
       };
     },
 
-    /* ========= Save ========= */
+    /* Save */
     async save() {
-      this.saving = true;
-      this.error = "";
-      this.fieldErrors = {};
+      this.saving = true; this.error = ""; this.fieldErrors = {};
 
-      if (!String(this.form.sku || "").trim()) {
-        this.saving = false;
-        this.error = "SKU wajib diisi.";
-        return;
-      }
-      if (!String(this.form.name || "").trim()) {
-        this.saving = false;
-        this.error = "Name wajib diisi.";
-        return;
-      }
-      if (Number(this.form.base_price) < 0) {
-        this.saving = false;
-        this.error = "Base price tidak boleh negatif.";
-        return;
-      }
+      if (!String(this.form.sku || "").trim()) { this.saving = false; this.toast("warning","SKU wajib diisi."); this.error="SKU wajib diisi."; return; }
+      if (!String(this.form.name || "").trim()) { this.saving = false; this.toast("warning","Name wajib diisi."); this.error="Name wajib diisi."; return; }
+      if (Number(this.form.base_price) < 0) { this.saving = false; this.toast("warning","Base price tidak boleh negatif."); this.error="Base price tidak boleh negatif."; return; }
 
       try {
         const payload = this.toPayload();
         if (this.modal.mode === "create") {
           await this.api().post("/products", payload);
+          this.toast("success", "Product created");
         } else {
           await this.api().put(`/products/${this.form.id}`, payload);
+          this.toast("success", "Product updated");
         }
         this.modal.open = false;
         await this.reload();
       } catch (e) {
         if (e?.response?.status === 422) {
           this.fieldErrors = e.response.data?.errors || {};
-          this.error =
-            Object.values(this.fieldErrors)[0]?.[0] ||
-            e.response.data?.message ||
-            "Validasi gagal";
+          const msg = Object.values(this.fieldErrors)[0]?.[0] || e.response.data?.message || "Validasi gagal";
+          this.error = msg; this.toast("error", msg);
         } else {
           this.error = e?.response?.data?.message || "Gagal menyimpan produk";
+          this.toast("error", this.error);
         }
-      } finally {
-        this.saving = false;
-      }
+      } finally { this.saving = false; }
     },
 
-    /* ========= Delete ========= */
+    /* Delete */
     async confirmDelete(row) {
-      if (!confirm(`Hapus produk "${row.name}"?`)) return;
+      const res = await Swal.fire({
+        title: "Delete product?",
+        text: `Hapus produk "${row.name}" permanen.`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, delete",
+        cancelButtonText: "Cancel",
+        reverseButtons: true,
+        confirmButtonColor: "#ef4444",
+      });
+      if (!res.isConfirmed) return;
+
       this.saving = true; this.error = "";
       try {
         await this.api().delete(`/products/${row.id}`);
+        this.toast("success", "Product deleted");
         await this.reload();
       } catch (e) {
         this.error = e?.response?.data?.message || "Gagal menghapus produk";
-      } finally {
-        this.saving = false;
-      }
+        this.toast("error", this.error);
+      } finally { this.saving = false; }
     },
   },
 };
