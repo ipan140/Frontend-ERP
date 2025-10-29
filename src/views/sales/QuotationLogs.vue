@@ -31,7 +31,7 @@
             <option value="confirmed">confirmed</option>
           </select>
           <p class="text-xs text-gray-500 mt-1">
-            sent→<code>/send</code>, approved→<code>/approve</code>, rejected→<code>/lose</code>, expired→<code>/expire</code>, confirmed→<code>/confirm</code>
+            Backend akan memetakan status ke sistem (approved/confirmed → won, rejected → lost).
           </p>
         </div>
         <div class="md:col-span-2">
@@ -70,7 +70,7 @@
               <td class="px-6 py-3"><span :class="badge(r.status)">{{ r.status }}</span></td>
               <td class="px-6 py-3">{{ r.note || '-' }}</td>
               <td class="px-6 py-3">{{ r.by }}</td>
-              <td class="px-6 py-3">{{ r.created_at }}</td>
+              <td class="px-6 py-3">{{ r.when }}</td>
             </tr>
             <tr v-if="!loading && !rows.length">
               <td colspan="5" class="px-6 py-6 text-center text-gray-400">No logs found</td>
@@ -99,14 +99,20 @@ export default {
     };
   },
   computed: {
-    // Normalisasi baris untuk tampilan (status dari to_status)
+    // Normalisasi baris untuk tampilan
     displayRows() {
-      return this.rows.map((r) => ({
-        ...r,
-        status: r.status || r.to_status || r.new_status || "-",
-        note: r.note ?? r.reason ?? null,
-        by: r.user_name || r.user?.name || r.by || "-",
-      }));
+      return this.rows.map((r) => {
+        const status = r.status || r.to_status || r.new_status || "-";
+        // backend kirim user_name + changed_at
+        const when = r.changed_at || r.created_at || r.updated_at || "";
+        return {
+          ...r,
+          status,
+          note: r.note ?? r.reason ?? null,
+          by: r.user_name || r.user?.name || r.by || "-",
+          when,
+        };
+      });
     },
   },
   mounted() {
@@ -165,12 +171,9 @@ export default {
         const { data } = await this.api().get(`/quotations/${this.qid}`);
         this.header.number =
           data?.quotation?.number || data?.number || `#${this.qid}`;
-        // jika response show() sudah mengembalikan logs
-        const logs =
-          data?.logs ||
-          data?.quotation?.logs ||
-          data?.logs?.data ||
-          [];
+
+        // jika show() sudah mengembalikan logs, boleh diisi awal
+        const logs = data?.logs || data?.quotation?.logs || data?.logs?.data || [];
         if (Array.isArray(logs) && logs.length) this.rows = logs;
       } catch {
         this.header.number = `#${this.qid}`;
@@ -181,16 +184,11 @@ export default {
       this.loading = true;
       this.error = "";
       try {
-        // Prefer: endpoint khusus log
+        // Endpoint khusus log (disarankan)
         const { data } = await this.api().get(`/quotation-logs`, {
           params: { quotation_id: this.qid },
         });
-        let rows = Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : []);
-        // fallback bila endpoint di atas belum ada
-        if (!rows.length) {
-          const { data: d2 } = await this.api().get(`/quotations/${this.qid}`);
-          rows = d2?.logs || d2?.quotation?.logs || d2?.logs?.data || [];
-        }
+        const rows = Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : []);
         this.rows = rows;
       } catch (e) {
         this.error = e?.response?.data?.message || "Gagal memuat logs";
@@ -199,45 +197,20 @@ export default {
       }
     },
 
-    // Map status → action sesuai routes
-    statusToAction(status) {
-      const map = {
-        sent: "send",
-        approved: "approve",
-        confirmed: "confirm",
-        expired: "expire",
-        rejected: "lose",
-      };
-      return map[status] || null; // draft & lainnya => null
-    },
-
     async addLog() {
       this.saving = true;
       this.error = "";
-      const note = this.form.note || null;
-      const action = this.statusToAction(this.form.status);
-
       try {
-        if (action) {
-          // Kirim note & reason agar cocok dg berbagai controller
-          await this.api().post(`/quotations/${this.qid}/${action}`, {
-            note,
-            reason: note,
-          });
-        } else {
-          // fallback: set status langsung (mis. draft)
-          await this.api().put(`/quotations/${this.qid}`, {
-            status: this.form.status,
-            note,
-          });
-        }
+        // FE cukup kirim ke endpoint log — backend yang urus mapping status
+        await this.api().post(`/quotation-logs`, {
+          quotation_id: this.qid,
+          status: this.form.status,
+          note: this.form.note || null,
+        });
         this.form.note = "";
         await this.reload();
       } catch (e) {
-        this.error =
-          e?.response?.data?.message ||
-          e?.message ||
-          "Gagal menambah log";
+        this.error = e?.response?.data?.message || e?.message || "Gagal menambah log";
       } finally {
         this.saving = false;
       }

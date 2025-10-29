@@ -1,46 +1,80 @@
 <template>
   <div class="p-4">
-    <!-- header -->
+    <!-- Header -->
     <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
       <div>
-        <p class="uppercase text-xs text-gray-700 font-semibold">master</p>
+        <p class="uppercase text-xs text-gray-700 font-semibold">sales</p>
         <h1 class="text-2xl text-gray-900 dark:text-gray-200 font-medium">Quotations</h1>
       </div>
 
-      <div class="flex gap-2">
-        <input
-          v-model="q.search"
-          @keyup.enter="reload()"
-          class="border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200"
-          placeholder="Search number/customer…"
-        />
-        <button
-          @click="reload()"
-          class="bg-white dark:bg-gray-800 hover:border-gray-200 dark:hover:bg-gray-700 dark:text-white dark:border-gray-700 border rounded py-2 px-5"
-        >
-          Search
-        </button>
+      <div class="flex flex-wrap gap-2">
+        <div class="flex items-center gap-2">
+          <input
+            v-model="q.search"
+            @keyup.enter="reload()"
+            class="border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200"
+            placeholder="Search number/customer…"
+          />
+          <!-- search icon -->
+          <button
+            @click="reload()"
+            class="p-2 rounded border dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
+            title="Search"
+            aria-label="Search"
+          >
+            <Icon icon="mdi:magnify" class="text-[20px]" />
+          </button>
+        </div>
+
+        <!-- add icon + text -->
         <button
           @click="openCreate()"
-          class="bg-primary border flex gap-2 text-white hover:bg-primary/80 dark:border-gray-700 rounded py-2.5 px-5"
+          class="inline-flex items-center gap-2 px-3 py-2 rounded bg-primary text-white hover:bg-primary/80"
+          title="New Quotation"
+          aria-label="New Quotation"
         >
-          <span class="text-2xl">
-            <Icon icon="ic:twotone-plus" />
-          </span>
+          <Icon icon="mdi:plus" class="text-[20px]" />
           <span>New Quotation</span>
         </button>
       </div>
     </div>
 
-    <!-- summary cards -->
+    <!-- Summary cards (native, tanpa import komponen) -->
     <div class="grid lg:grid-cols-4 md:grid-cols-2 grid-cols-1 gap-3 mt-5">
-      <SummaryCard icon-bg="bg-purple-200" icon-color="text-purple-600" title="Total" :value="stats.total" />
-      <SummaryCard icon-bg="bg-gray-200" icon-color="text-gray-700" title="Draft" :value="stats.draft" />
-      <SummaryCard icon-bg="bg-blue-200" icon-color="text-blue-600" title="Sent" :value="stats.sent" />
-      <SummaryCard icon-bg="bg-green-200" icon-color="text-green-600" title="Approved" :value="stats.approved" />
+      <div class="flex items-center justify-between bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-200 rounded-md p-4">
+        <div>
+          <p class="text-sm font-semibold">Total</p>
+          <h3 class="text-2xl font-bold">{{ stats.total }}</h3>
+        </div>
+        <Icon icon="mdi:clipboard-text" class="text-3xl opacity-70" />
+      </div>
+
+      <div class="flex items-center justify-between bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-md p-4">
+        <div>
+          <p class="text-sm font-semibold">Draft</p>
+          <h3 class="text-2xl font-bold">{{ stats.draft }}</h3>
+        </div>
+        <Icon icon="mdi:file-document-edit-outline" class="text-3xl opacity-70" />
+      </div>
+
+      <div class="flex items-center justify-between bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-200 rounded-md p-4">
+        <div>
+          <p class="text-sm font-semibold">Sent</p>
+          <h3 class="text-2xl font-bold">{{ stats.sent }}</h3>
+        </div>
+        <Icon icon="mdi:send" class="text-3xl opacity-70" />
+      </div>
+
+      <div class="flex items-center justify-between bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-200 rounded-md p-4">
+        <div>
+          <p class="text-sm font-semibold">Approved</p>
+          <h3 class="text-2xl font-bold">{{ stats.approved }}</h3>
+        </div>
+        <Icon icon="mdi:check-decagram" class="text-3xl opacity-70" />
+      </div>
     </div>
 
-    <!-- filter row -->
+    <!-- Filters -->
     <div class="mt-4 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-md">
       <div class="px-5 py-4 flex flex-wrap gap-3 items-center justify-between">
         <div class="flex flex-wrap items-center gap-2">
@@ -50,7 +84,7 @@
             @change="reload()"
             class="border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200"
           >
-            <option :value="''">All</option>
+            <option value="">All</option>
             <option value="draft">Draft</option>
             <option value="sent">Sent</option>
             <option value="approved">Approved</option>
@@ -64,7 +98,7 @@
             @change="reload()"
             class="border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200"
           >
-            <option v-for="n in [10, 20, 50]" :key="n" :value="n">{{ n }}</option>
+            <option v-for="n in [10,20,50]" :key="n" :value="n">{{ n }}</option>
           </select>
 
           <label class="text-sm ml-3 dark:text-gray-300">Valid Until</label>
@@ -88,7 +122,7 @@
         </div>
       </div>
 
-      <!-- table -->
+      <!-- Table -->
       <div class="overflow-x-auto">
         <table class="min-w-full text-sm text-left text-gray-600 dark:text-gray-300">
           <thead class="text-xs uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -103,7 +137,7 @@
               <th class="px-6 py-3 text-right">Tax</th>
               <th class="px-6 py-3 text-right">Total</th>
               <th class="px-6 py-3">Notes</th>
-              <th class="px-6 py-3"></th>
+              <th class="px-6 py-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -112,26 +146,29 @@
               <td class="px-6 py-3">{{ r.customer_name || r.customer_id }}</td>
               <td class="px-6 py-3">{{ r.pricelist_name || r.pricelist_id || '-' }}</td>
               <td class="px-6 py-3">{{ r.valid_until || '-' }}</td>
-              <td class="px-6 py-3">
-                <span :class="statusBadge(r.status)">{{ r.status }}</span>
-              </td>
+              <td class="px-6 py-3"><span :class="statusBadge(r.status)">{{ r.status }}</span></td>
               <td class="px-6 py-3 text-right">Rp{{ fm(r.subtotal) }}</td>
               <td class="px-6 py-3 text-right">Rp{{ fm(r.discount_amount) }}</td>
               <td class="px-6 py-3 text-right">Rp{{ fm(r.tax_amount) }}</td>
               <td class="px-6 py-3 text-right font-medium">Rp{{ fm(r.total) }}</td>
               <td class="px-6 py-3 truncate max-w-[220px]" :title="r.notes">{{ r.notes || '-' }}</td>
-              <td class="px-6 py-3 text-right whitespace-nowrap">
-                <button @click="openEdit(r)" class="px-2 py-1 rounded border dark:border-gray-600 mr-2" title="Edit">
-                  <Icon icon="mdi:pencil" />
+
+              <!-- Icon-only actions -->
+              <td class="px-6 py-3 text-right whitespace-nowrap space-x-1">
+                <button class="p-1.5 rounded border dark:border-gray-600" @click="openView(r)" title="View" aria-label="View">
+                  <Icon icon="mdi:eye-outline" class="text-[18px]" />
                 </button>
-                <button @click="goItems(r)" class="px-2 py-1 rounded border dark:border-gray-600 mr-2" title="Manage Items">
-                  <Icon icon="mdi:format-list-bulleted" />
+                <button class="p-1.5 rounded border dark:border-gray-600" @click="openEdit(r)" title="Edit" aria-label="Edit">
+                  <Icon icon="mdi:pencil" class="text-[18px]" />
                 </button>
-                <button @click="goLogs(r)" class="px-2 py-1 rounded border dark:border-gray-600 mr-2" title="View Logs">
-                  <Icon icon="mdi:history" />
+                <button class="p-1.5 rounded border dark:border-gray-600" @click="goItems(r)" title="Items" aria-label="Items">
+                  <Icon icon="mdi:format-list-bulleted" class="text-[18px]" />
                 </button>
-                <button @click="confirmDelete(r)" class="px-2 py-1 rounded border dark:border-gray-600" title="Delete">
-                  <Icon icon="mdi:trash-can-outline" />
+                <button class="p-1.5 rounded border dark:border-gray-600" @click="goLogs(r)" title="Logs" aria-label="Logs">
+                  <Icon icon="mdi:history" class="text-[18px]" />
+                </button>
+                <button class="p-1.5 rounded border dark:border-gray-600" @click="confirmDelete(r)" title="Delete" aria-label="Delete">
+                  <Icon icon="mdi:trash-can-outline" class="text-[18px]" />
                 </button>
               </td>
             </tr>
@@ -142,48 +179,92 @@
         </table>
       </div>
 
-      <!-- pagination -->
+      <!-- Pagination -->
       <div class="px-5 py-4 flex items-center justify-between">
-        <button
-          :disabled="!page.prev"
-          @click="go(page.current - 1)"
-          class="px-3 py-2 rounded border dark:border-gray-700 disabled:opacity-40"
-        >
+        <button :disabled="!page.prev" @click="go(page.current - 1)" class="px-3 py-2 rounded border dark:border-gray-700 disabled:opacity-40">
           Prev
         </button>
-        <div class="text-sm text-gray-500 dark:text-gray-400">
-          Page {{ page.current || 1 }} / {{ page.last || 1 }}
-        </div>
-        <button
-          :disabled="!page.next"
-          @click="go(page.current + 1)"
-          class="px-3 py-2 rounded border dark:border-gray-700 disabled:opacity-40"
-        >
+        <div class="text-sm text-gray-500 dark:text-gray-400">Page {{ page.current || 1 }} / {{ page.last || 1 }}</div>
+        <button :disabled="!page.next" @click="go(page.current + 1)" class="px-3 py-2 rounded border dark:border-gray-700 disabled:opacity-40">
           Next
         </button>
       </div>
     </div>
 
-    <!-- modal -->
+    <!-- View Modal (read-only) -->
+    <div v-if="view.open" class="fixed inset-0 z-50 flex items-center justify-center">
+      <div class="absolute inset-0 bg-black/40" @click="view.open = false"></div>
+      <div class="relative bg-white dark:bg-gray-800 rounded-md border dark:border-gray-700 w-full max-w-3xl p-6">
+        <div class="flex items-start justify-between">
+          <h3 class="text-lg font-semibold dark:text-gray-200">Quotation Details</h3>
+          <button class="p-1.5 rounded border dark:border-gray-600" @click="view.open=false" aria-label="Close">
+            <Icon icon="mdi:close" class="text-[18px]" />
+          </button>
+        </div>
+
+        <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
+          <div><div class="text-gray-500 dark:text-gray-400">Number</div><div class="font-medium">{{ view.row.number || '-' }}</div></div>
+          <div><div class="text-gray-500 dark:text-gray-400">Status</div><div class="font-medium"><span :class="statusBadge(view.row.status)">{{ view.row.status }}</span></div></div>
+          <div><div class="text-gray-500 dark:text-gray-400">Customer</div><div class="font-medium">{{ view.row.customer_name || view.row.customer_id || '-' }}</div></div>
+          <div><div class="text-gray-500 dark:text-gray-400">Pricelist</div><div class="font-medium">{{ view.row.pricelist_name || view.row.pricelist_id || '-' }}</div></div>
+          <div><div class="text-gray-500 dark:text-gray-400">Valid Until</div><div class="font-medium">{{ view.row.valid_until || '-' }}</div></div>
+          <div><div class="text-gray-500 dark:text-gray-400">Subtotal</div><div class="font-medium">Rp{{ fm(view.row.subtotal) }}</div></div>
+          <div><div class="text-gray-500 dark:text-gray-400">Discount</div><div class="font-medium">Rp{{ fm(view.row.discount_amount) }}</div></div>
+          <div><div class="text-gray-500 dark:text-gray-400">Tax</div><div class="font-medium">Rp{{ fm(view.row.tax_amount) }}</div></div>
+          <div><div class="text-gray-500 dark:text-gray-400">Total</div><div class="font-medium">Rp{{ fm(view.row.total) }}</div></div>
+          <div class="sm:col-span-2"><div class="text-gray-500 dark:text-gray-400">Notes</div><div class="font-medium whitespace-pre-line">{{ view.row.notes || '-' }}</div></div>
+          <div v-if="view.extra.created_at"><div class="text-gray-500 dark:text-gray-400">Created</div><div class="font-medium">{{ view.extra.created_at }}</div></div>
+          <div v-if="view.extra.updated_at"><div class="text-gray-500 dark:text-gray-400">Updated</div><div class="font-medium">{{ view.extra.updated_at }}</div></div>
+        </div>
+
+        <div class="mt-5 flex gap-2">
+          <button @click="goItems(view.row)" class="p-2 rounded border dark:border-gray-600" title="Manage Items">
+            <Icon icon="mdi:format-list-bulleted" class="text-[18px]" />
+          </button>
+          <button @click="goLogs(view.row)" class="p-2 rounded border dark:border-gray-600" title="View Logs">
+            <Icon icon="mdi:history" class="text-[18px]" />
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Create/Edit Modal -->
     <div v-if="modal.open" class="fixed inset-0 z-50 flex items-center justify-center">
       <div class="absolute inset-0 bg-black/40" @click="modal.open = false"></div>
       <div class="relative bg-white dark:bg-gray-800 rounded-md border dark:border-gray-700 w-full max-w-3xl p-5">
-        <h3 class="text-lg font-semibold mb-4 dark:text-gray-200">
-          {{ modal.mode === 'create' ? 'New Quotation' : 'Edit Quotation' }}
-        </h3>
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-lg font-semibold dark:text-gray-200">
+            {{ modal.mode === 'create' ? 'New Quotation' : 'Edit Quotation' }}
+          </h3>
+          <button class="p-1.5 rounded border dark:border-gray-600" @click="modal.open=false" aria-label="Close">
+            <Icon icon="mdi:close" class="text-[18px]" />
+          </button>
+        </div>
 
         <div class="grid md:grid-cols-2 gap-3">
-          <FormInput v-model="form.number" label="Number" placeholder="Auto or custom (e.g. QO-202510-0001)" />
-          <FormInput v-model.number="form.customer_id" label="Customer ID" :required="true" placeholder="e.g. 1" />
-          <FormInput v-model.number="form.pricelist_id" label="Pricelist ID" placeholder="e.g. 1" />
-          <FormInput v-model="form.valid_until" type="date" label="Valid Until" />
+          <div>
+            <label class="block text-sm mb-1 dark:text-gray-300">Number</label>
+            <input v-model="form.number" class="w-full border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200" placeholder="Auto or custom (e.g. QO-202510-0001)" />
+          </div>
+
+          <div>
+            <label class="block text-sm mb-1 dark:text-gray-300">Customer ID<span class="text-red-500">*</span></label>
+            <input v-model.number="form.customer_id" type="number" min="1" class="w-full border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200" placeholder="e.g. 1" />
+          </div>
+
+          <div>
+            <label class="block text-sm mb-1 dark:text-gray-300">Pricelist ID</label>
+            <input v-model.number="form.pricelist_id" type="number" min="1" class="w-full border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200" placeholder="e.g. 1" />
+          </div>
+
+          <div>
+            <label class="block text-sm mb-1 dark:text-gray-300">Valid Until</label>
+            <input v-model="form.valid_until" type="date" class="w-full border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200" />
+          </div>
 
           <div>
             <label class="block text-sm mb-1 dark:text-gray-300">Status</label>
-            <select
-              v-model="form.status"
-              class="w-full border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200"
-            >
+            <select v-model="form.status" class="w-full border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200">
               <option value="draft">draft</option>
               <option value="sent">sent</option>
               <option value="approved">approved</option>
@@ -192,19 +273,29 @@
             </select>
           </div>
 
-          <FormInput v-model.number="form.subtotal" type="number" label="Subtotal" />
-          <FormInput v-model.number="form.discount_amount" type="number" label="Discount Amount" />
-          <FormInput v-model.number="form.tax_amount" type="number" label="Tax Amount" />
-          <FormInput :model-value="calcTotal" disabled label="Total (auto)" />
+          <div>
+            <label class="block text-sm mb-1 dark:text-gray-300">Subtotal</label>
+            <input v-model.number="form.subtotal" type="number" min="0" step="0.01" class="w-full border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200" />
+          </div>
+
+          <div>
+            <label class="block text-sm mb-1 dark:text-gray-300">Discount Amount</label>
+            <input v-model.number="form.discount_amount" type="number" min="0" step="0.01" class="w-full border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200" />
+          </div>
+
+          <div>
+            <label class="block text-sm mb-1 dark:text-gray-300">Tax Amount</label>
+            <input v-model.number="form.tax_amount" type="number" min="0" step="0.01" class="w-full border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200" />
+          </div>
+
+          <div>
+            <label class="block text-sm mb-1 dark:text-gray-300">Total (auto)</label>
+            <input :value="calcTotal" disabled class="w-full border dark:border-gray-700 rounded px-3 py-2 bg-gray-50 dark:bg-gray-900/50 dark:text-gray-300" />
+          </div>
 
           <div class="md:col-span-2">
             <label class="block text-sm mb-1 dark:text-gray-300">Notes</label>
-            <textarea
-              v-model="form.notes"
-              rows="3"
-              class="w-full border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200"
-              placeholder="Catatan penawaran…"
-            ></textarea>
+            <textarea v-model="form.notes" rows="3" class="w-full border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200" placeholder="Catatan penawaran…"></textarea>
           </div>
         </div>
 
@@ -214,48 +305,39 @@
         </div>
 
         <div class="mt-5 flex items-center gap-2">
-          <!-- tombol sekunder kiri (khusus edit) -->
-          <button
-            v-if="modal.mode === 'edit'"
-            @click="goItems({ id: form.id, number: form.number })"
-            class="px-4 py-2 rounded border dark:border-gray-600 mr-auto"
-            title="Kelola items untuk quotation ini"
-          >
-            Manage Items
-          </button>
-          <button
-            v-if="modal.mode === 'edit'"
-            @click="goLogs({ id: form.id, number: form.number })"
-            class="px-4 py-2 rounded border dark:border-gray-600"
-            title="Lihat riwayat status quotation"
-          >
-            View Logs
-          </button>
+          <!-- ikon kiri (khusus edit) -->
+          <div class="mr-auto flex gap-2" v-if="modal.mode==='edit'">
+            <button @click="goItems({ id: form.id, number: form.number })" class="p-2 rounded border dark:border-gray-600" title="Manage Items">
+              <Icon icon="mdi:format-list-bulleted" class="text-[18px]" />
+            </button>
+            <button @click="goLogs({ id: form.id, number: form.number })" class="p-2 rounded border dark:border-gray-600" title="View Logs">
+              <Icon icon="mdi:history" class="text-[18px]" />
+            </button>
+          </div>
 
-          <!-- kanan -->
           <div class="ml-auto flex gap-2">
-            <button @click="modal.open = false" class="px-4 py-2 rounded border dark:border-gray-600">Cancel</button>
-            <button @click="save()" :disabled="saving" class="px-4 py-2 rounded bg-primary text-white hover:bg-primary/80">
-              {{ saving ? 'Saving…' : 'Save' }}
+            <button @click="modal.open=false" class="p-2 rounded border dark:border-gray-600" title="Cancel">
+              <Icon icon="mdi:close" class="text-[18px]" />
+            </button>
+            <button @click="save()" :disabled="saving" class="p-2 rounded bg-primary text-white hover:bg-primary/80" title="Save">
+              <Icon :icon="saving ? 'mdi:loading' : 'mdi:content-save-outline'" :class="['text-[18px]', saving && 'animate-spin']" />
             </button>
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- Fallback toast -->
+    <div v-if="error" class="fixed bottom-4 right-4 bg-red-600 text-white text-sm px-4 py-3 rounded shadow">
+      {{ error }}
     </div>
   </div>
 </template>
 
 <script>
 import axios from "axios";
+import Swal from "sweetalert2";
 import { Icon } from "@iconify/vue";
-
-/**
- * Endpoint (sesuaikan Laravel):
- * GET    /api/quotations
- * POST   /api/quotations
- * PUT    /api/quotations/{id}
- * DELETE /api/quotations/{id}
- */
 
 export default {
   name: "Quotations",
@@ -268,8 +350,24 @@ export default {
       q: { page: 1, perPage: 10, search: "", status: "", validFrom: "", validTo: "" },
       page: { current: 1, last: 1, total: 0, from: 0, to: 0, prev: false, next: false },
       stats: { total: 0, draft: 0, sent: 0, approved: 0 },
+
+      view: { open: false, row: {}, extra: {} },
+
       modal: { open: false, mode: "create" },
-      form: this.emptyForm(),
+      form: {
+        id: null,
+        number: "",
+        customer_id: null,
+        pricelist_id: null,
+        valid_until: "",
+        status: "draft",
+        subtotal: 0,
+        discount_amount: 0,
+        tax_amount: 0,
+        total: 0,
+        notes: "",
+      },
+
       saving: false,
       error: "",
       fieldErrors: {},
@@ -299,20 +397,15 @@ export default {
   },
 
   methods: {
-    emptyForm() {
-      return {
-        id: null,
-        number: "",
-        customer_id: null,
-        pricelist_id: null,
-        valid_until: "",
-        status: "draft",
-        subtotal: 0,
-        discount_amount: 0,
-        tax_amount: 0,
-        total: 0,
-        notes: "",
-      };
+    toast(icon, title) {
+      const T = Swal.mixin({
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 1800,
+        timerProgressBar: true,
+      });
+      T.fire({ icon, title });
     },
 
     resolveBaseUrl() {
@@ -322,7 +415,6 @@ export default {
         "http://localhost:8000";
       return String(raw).trim().replace(/\/+$/, "");
     },
-
     api() {
       const token = localStorage.getItem("token");
       const API_BASE = this.resolveBaseUrl();
@@ -336,8 +428,7 @@ export default {
       instance.interceptors.response.use(
         (res) => res,
         (err) => {
-          const status = err?.response?.status;
-          if (status === 401) {
+          if (err?.response?.status === 401) {
             localStorage.removeItem("token");
             localStorage.removeItem("user");
             window.location.href = "/auth/login";
@@ -351,7 +442,6 @@ export default {
     fm(n) {
       return Number(n || 0).toLocaleString("id-ID");
     },
-
     statusBadge(st) {
       const base = "px-2 py-1 text-xs rounded";
       const map = {
@@ -364,14 +454,27 @@ export default {
       return `${base} ${map[st] || "bg-gray-100 text-gray-700"}`;
     },
 
+    cleanParams(p) {
+      const out = { ...p };
+      if (!String(out.search || "").trim()) delete out.search;
+      if (!String(out.status || "").trim()) delete out.status;
+      if (!String(out.validFrom || "").trim()) delete out.validFrom;
+      if (!String(out.validTo || "").trim()) delete out.validTo;
+      return out;
+    },
+
     toPayload() {
       const t = (v) => (typeof v === "string" ? v.trim() : v);
       return {
         number: t(this.form.number) || null,
         customer_id:
-          this.form.customer_id === "" || this.form.customer_id == null ? null : Number(this.form.customer_id),
+          this.form.customer_id == null || this.form.customer_id === ""
+            ? null
+            : Number(this.form.customer_id),
         pricelist_id:
-          this.form.pricelist_id === "" || this.form.pricelist_id == null ? null : Number(this.form.pricelist_id),
+          this.form.pricelist_id == null || this.form.pricelist_id === ""
+            ? null
+            : Number(this.form.pricelist_id),
         valid_until: t(this.form.valid_until) || null,
         status: t(this.form.status) || "draft",
         subtotal: Number(this.form.subtotal || 0),
@@ -387,23 +490,14 @@ export default {
       this.error = "";
       this.fieldErrors = {};
       try {
-        const paramsRaw = {
+        const params = this.cleanParams({
           page: this.q.page,
           per_page: this.q.perPage,
           search: this.q.search,
           status: this.q.status,
           valid_from: this.q.validFrom,
           valid_to: this.q.validTo,
-        };
-        const params = Object.fromEntries(
-          Object.entries(paramsRaw).filter(([k, v]) => {
-            if (v === null || v === undefined) return false;
-            if (k === "search") return String(v).trim().length > 0;
-            if (k === "status") return String(v).trim().length > 0;
-            if (k === "valid_from" || k === "valid_to") return String(v).trim().length > 0;
-            return true;
-          })
-        );
+        });
 
         const { data } = await this.api().get("/quotations", { params });
 
@@ -431,8 +525,8 @@ export default {
         this.stats.sent = this.rows.filter((x) => x.status === "sent").length;
         this.stats.approved = this.rows.filter((x) => x.status === "approved").length;
       } catch (e) {
-        this.error = "Gagal memuat data quotations";
-        if (e?.response?.data?.message) this.error += `: ${e.response.data.message}`;
+        this.error = e?.response?.data?.message || "Gagal memuat data quotations";
+        this.toast("error", this.error);
       } finally {
         this.loading = false;
       }
@@ -443,13 +537,36 @@ export default {
       this.reload();
     },
 
+    /* View (read-only) */
+    async openView(row) {
+      try {
+        const { data } = await this.api().get(`/quotations/${row.id}`);
+        const r = data?.quotation || data?.data || data || row;
+        this.view = { open: true, row: r, extra: { created_at: r.created_at, updated_at: r.updated_at } };
+      } catch {
+        this.view = { open: true, row, extra: {} };
+      }
+    },
+
+    /* Create/Edit */
     openCreate() {
       this.modal = { open: true, mode: "create" };
       this.error = "";
       this.fieldErrors = {};
-      this.form = this.emptyForm();
+      this.form = {
+        id: null,
+        number: "",
+        customer_id: null,
+        pricelist_id: null,
+        valid_until: "",
+        status: "draft",
+        subtotal: 0,
+        discount_amount: 0,
+        tax_amount: 0,
+        total: 0,
+        notes: "",
+      };
     },
-
     openEdit(row) {
       this.modal = { open: true, mode: "edit" };
       this.error = "";
@@ -457,8 +574,10 @@ export default {
       this.form = {
         id: row.id,
         number: row.number || "",
-        customer_id: row.customer_id === "" || row.customer_id == null ? null : Number(row.customer_id),
-        pricelist_id: row.pricelist_id === "" || row.pricelist_id == null ? null : Number(row.pricelist_id),
+        customer_id:
+          row.customer_id == null || row.customer_id === "" ? null : Number(row.customer_id),
+        pricelist_id:
+          row.pricelist_id == null || row.pricelist_id === "" ? null : Number(row.pricelist_id),
         valid_until: row.valid_until || "",
         status: row.status || "draft",
         subtotal: Number(row.subtotal || 0),
@@ -473,17 +592,22 @@ export default {
       this.saving = true;
       this.error = "";
       this.fieldErrors = {};
+
       if (!this.form.customer_id) {
         this.saving = false;
+        this.toast("warning", "Customer ID wajib diisi.");
         this.error = "Customer ID wajib diisi.";
         return;
       }
+
       try {
         const payload = this.toPayload();
         if (this.modal.mode === "create") {
           await this.api().post("/quotations", payload);
+          this.toast("success", "Quotation created");
         } else {
           await this.api().put(`/quotations/${this.form.id}`, payload);
+          this.toast("success", "Quotation updated");
         }
         this.modal.open = false;
         await this.reload();
@@ -491,10 +615,13 @@ export default {
         if (e?.response?.status === 422) {
           const errs = e.response.data?.errors || {};
           this.fieldErrors = errs;
-          const firstMsg = Object.values(errs)[0]?.[0] || e.response.data?.message || "Validasi gagal";
-          this.error = firstMsg;
+          const msg =
+            Object.values(errs)[0]?.[0] || e.response.data?.message || "Validasi gagal";
+          this.error = msg;
+          this.toast("error", msg);
         } else {
           this.error = e?.response?.data?.message || "Gagal menyimpan data";
+          this.toast("error", this.error);
         }
       } finally {
         this.saving = false;
@@ -502,23 +629,34 @@ export default {
     },
 
     async confirmDelete(row) {
-      if (!confirm(`Yakin ingin menghapus quotation ${row.number || row.id}?`)) return;
+      const res = await Swal.fire({
+        title: "Delete quotation?",
+        text: `Hapus quotation ${row.number || row.id} permanen.`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, delete",
+        cancelButtonText: "Cancel",
+        reverseButtons: true,
+        confirmButtonColor: "#ef4444",
+      });
+      if (!res.isConfirmed) return;
+
       try {
         await this.api().delete(`/quotations/${row.id}`);
+        this.toast("success", "Quotation deleted");
         await this.reload();
       } catch (e) {
         this.error = e?.response?.data?.message || "Gagal menghapus data";
+        this.toast("error", this.error);
       }
     },
 
-    /* ====== NEW: navigation to items & logs ====== */
+    /* Navigation */
     goItems(row) {
-      if (!row?.id) return;
-      this.$router.push({ name: "QuotationItems", params: { id: row.id } });
+      if (row?.id) this.$router.push({ name: "QuotationItems", params: { id: row.id } });
     },
     goLogs(row) {
-      if (!row?.id) return;
-      this.$router.push({ name: "QuotationLogs", params: { id: row.id } });
+      if (row?.id) this.$router.push({ name: "QuotationLogs", params: { id: row.id } });
     },
   },
 };
