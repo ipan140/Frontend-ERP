@@ -243,7 +243,7 @@
             </menu-accordion>
           </div>
 
-          <!-- Human Resources -->
+          <!-- Human Resources (updated to match your files) -->
           <div class="item mt-3">
             <menu-accordion>
               <template #icon><Icon icon="mdi:account-group-outline" /></template>
@@ -253,20 +253,63 @@
                 </div>
               </template>
               <template #content>
-                <router-link to="/hr/employees"    class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Employees</router-link>
-                <router-link to="/hr/recruitment"  class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Recruitment</router-link>
-                <router-link to="/hr/attendance"   class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Attendance</router-link>
-                <router-link to="/hr/time-off"     class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Time Off</router-link>
-                <router-link to="/hr/payroll"      class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Payroll</router-link>
-                <router-link to="/hr/appraisals"   class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Appraisals</router-link>
-                <router-link to="/hr/okr"          class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">OKR</router-link>
-                <router-link to="/hr/fleet"        class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Fleet</router-link>
-                <router-link to="/hr/contracts"    class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Contracts</router-link>
-                <router-link to="/hr/benefits"     class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Benefits</router-link>
-                <router-link to="/hr/disciplinary" class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Disciplinary</router-link>
-                <router-link to="/hr/training"     class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Training</router-link>
-                <router-link to="/hr/calendar"     class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Calendar</router-link>
-                <router-link to="/hr/reports"      class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click.native="closeOnMobile">Reports</router-link>
+                <!-- Master -->
+                <router-link
+                  to="/hr/employees"
+                  class="block p-3 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md"
+                  :class="startsWith('/hr/employees') ? 'bg-gray-200 dark:bg-gray-700' : ''"
+                  @click.native="closeOnMobile"
+                >Employees</router-link>
+
+                <router-link
+                  to="/hr/contracts"
+                  class="block p-3 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md"
+                  :class="startsWith('/hr/contracts') ? 'bg-gray-200 dark:bg-gray-700' : ''"
+                  @click.native="closeOnMobile"
+                >Contracts</router-link>
+
+                <router-link
+                  to="/hr/departments"
+                  class="block p-3 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md"
+                  :class="startsWith('/hr/departments') ? 'bg-gray-200 dark:bg-gray-700' : ''"
+                  @click.native="closeOnMobile"
+                >Departments</router-link>
+
+                <router-link
+                  to="/hr/jobs"
+                  class="block p-3 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md"
+                  :class="startsWith('/hr/jobs') ? 'bg-gray-200 dark:bg-gray-700' : ''"
+                  @click.native="closeOnMobile"
+                >Jobs</router-link>
+
+                <router-link
+                  to="/hr/holidays"
+                  class="block p-3 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md"
+                  :class="startsWith('/hr/holidays') ? 'bg-gray-200 dark:bg-gray-700' : ''"
+                  @click.native="closeOnMobile"
+                >Holidays</router-link>
+
+                <hr class="my-3 border-gray-200 dark:border-gray-700" />
+
+                <!-- Leaves -->
+                <router-link to="/hr/leave-types" class="block p-3 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md" :class="startsWith('/hr/leave-types') ? 'bg-gray-200 dark:bg-gray-700' : ''" @click.native="closeOnMobile">Leave Types</router-link>
+                <router-link to="/hr/leave-allocations" class="block p-3 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md" :class="startsWith('/hr/leave-allocations') ? 'bg-gray-200 dark:bg-gray-700' : ''" @click.native="closeOnMobile">Leave Allocations</router-link>
+                <router-link to="/hr/leaves" class="block p-3 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md" :class="startsWith('/hr/leaves') ? 'bg-gray-200 dark:bg-gray-700' : ''" @click.native="closeOnMobile">Leaves</router-link>
+
+                <hr class="my-3 border-gray-200 dark:border-gray-700" />
+
+                <!-- Attendance -->
+                <router-link to="/hr/shifts" class="block p-3 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md" :class="startsWith('/hr/shifts') ? 'bg-gray-200 dark:bg-gray-700' : ''" @click.native="closeOnMobile">Shifts</router-link>
+                <router-link to="/hr/attendances" class="block p-3 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md" :class="startsWith('/hr/attendances') ? 'bg-gray-200 dark:bg-gray-700' : ''" @click.native="closeOnMobile">Attendances</router-link>
+                <router-link to="/hr/attendance-history" class="block p-3 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md" :class="startsWith('/hr/attendance-history') ? 'bg-gray-200 dark:bg-gray-700' : ''" @click.native="closeOnMobile">Attendance History</router-link>
+                <router-link to="/hr/my-attendance" class="block p-3 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md" :class="startsWith('/hr/my-attendance') ? 'bg-gray-200 dark:bg-gray-700' : ''" @click.native="closeOnMobile">My Attendance</router-link>
+
+                <hr class="my-3 border-gray-200 dark:border-gray-700" />
+
+                <!-- Payroll -->
+                <router-link to="/hr/salary-structures" class="block p-3 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md" :class="startsWith('/hr/salary-structures') ? 'bg-gray-200 dark:bg-gray-700' : ''" @click.native="closeOnMobile">Salary Structures</router-link>
+                <router-link to="/hr/salary-rules" class="block p-3 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md" :class="startsWith('/hr/salary-rules') ? 'bg-gray-200 dark:bg-gray-700' : ''" @click.native="closeOnMobile">Salary Rules</router-link>
+                <router-link to="/hr/payslips" class="block p-3 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md" :class="startsWith('/hr/payslips') ? 'bg-gray-200 dark:bg-gray-700' : ''" @click.native="closeOnMobile">Payslips</router-link>
               </template>
             </menu-accordion>
           </div>
