@@ -1,4 +1,3 @@
-// src/router/index.js
 import { createRouter, createWebHistory } from "vue-router";
 
 /* =====================
@@ -27,8 +26,27 @@ import Quotations from "../views/sales/Quotations.vue";
 import QuotationItems from "../views/sales/QuotationItems.vue";
 import QuotationLogs from "../views/sales/QuotationLogs.vue";
 import SalesOrders from "../views/sales/SalesOrders.vue";
-import Products from "../views/sales/Products.vue"; // ⬅️ ditambahkan
-import Invoices from "../views/sales/Invoices.vue"; // ⬅️ NEW
+import Products from "../views/sales/Products.vue";
+import Invoices from "../views/sales/Invoices.vue";
+
+/* =====================
+   HR MODULE PAGES
+===================== */
+import Departments from "../views/HR/Departments.vue";
+import Jobs from "../views/HR/Jobs.vue";
+import Employees from "../views/HR/Employees.vue";
+import Holidays from "../views/HR/Holidays.vue";
+import LeaveTypes from "../views/HR/LeaveTypes.vue";
+import LeaveAllocations from "../views/HR/LeaveAllocations.vue";
+import Leaves from "../views/HR/Leaves.vue";
+import Shifts from "../views/HR/Shifts.vue";
+import Attendances from "../views/HR/Attendances.vue";
+import AttendanceHistory from "../views/HR/AttendanceHistory.vue";
+import MyAttendance from "../views/HR/MyAttendance.vue";
+import Contracts from "../views/HR/Contracts.vue";
+import SalaryStructures from "../views/HR/SalaryStructures.vue";
+import SalaryRules from "../views/HR/SalaryRules.vue";
+import Payslips from "../views/HR/Payslips.vue";
 
 /* =====================
    AUTH PAGES
@@ -71,7 +89,7 @@ const routes = [
   {
     path: "/sales",
     name: "SalesOverview",
-    component: Tables, // placeholder ringkasan
+    component: Tables,
     meta: { title: "Sales Overview" + appname, requiresAuth: true },
   },
   {
@@ -118,8 +136,6 @@ const routes = [
     props: true,
     meta: { title: "Quotation Logs" + appname, requiresAuth: true },
   },
-
-  // ⬅️ NEW: Invoices (list & deep-link)
   {
     path: "/sales/invoices",
     name: "Invoices",
@@ -132,6 +148,100 @@ const routes = [
     component: Invoices,
     props: true,
     meta: { title: "Invoice" + appname, requiresAuth: true },
+  },
+
+  /* =====================
+     HR MODULE ROUTES
+  ===================== */
+  {
+    path: "/hr/departments",
+    name: "HRDepartments",
+    component: Departments,
+    meta: { title: "Departments" + appname, requiresAuth: true },
+  },
+  {
+    path: "/hr/jobs",
+    name: "HRJobs",
+    component: Jobs,
+    meta: { title: "Job Positions" + appname, requiresAuth: true },
+  },
+  {
+    path: "/hr/employees",
+    name: "HREmployees",
+    component: Employees,
+    meta: { title: "Employees" + appname, requiresAuth: true },
+  },
+  {
+    path: "/hr/holidays",
+    name: "HRHolidays",
+    component: Holidays,
+    meta: { title: "Public Holidays" + appname, requiresAuth: true },
+  },
+  {
+    path: "/hr/leave-types",
+    name: "HRLeaveTypes",
+    component: LeaveTypes,
+    meta: { title: "Leave Types" + appname, requiresAuth: true },
+  },
+  {
+    path: "/hr/leave-allocations",
+    name: "HRLeaveAllocations",
+    component: LeaveAllocations,
+    meta: { title: "Leave Allocations" + appname, requiresAuth: true },
+  },
+  {
+    path: "/hr/leaves",
+    name: "HRLeaves",
+    component: Leaves,
+    meta: { title: "Employee Leaves" + appname, requiresAuth: true },
+  },
+  {
+    path: "/hr/shifts",
+    name: "HRShifts",
+    component: Shifts,
+    meta: { title: "Work Shifts" + appname, requiresAuth: true },
+  },
+  {
+    path: "/hr/attendances",
+    name: "HRAttendances",
+    component: Attendances,
+    meta: { title: "Attendances" + appname, requiresAuth: true },
+  },
+  {
+    path: "/hr/attendance-history",
+    name: "HRAttendanceHistory",
+    component: AttendanceHistory,
+    meta: { title: "Attendance History" + appname, requiresAuth: true },
+  },
+  {
+    path: "/hr/my-attendance",
+    name: "HRMyAttendance",
+    component: MyAttendance,
+    meta: { title: "My Attendance" + appname, requiresAuth: true },
+  },
+  {
+    path: "/hr/contracts",
+    name: "HRContracts",
+    component: Contracts,
+    meta: { title: "Contracts" + appname, requiresAuth: true },
+  },
+  {
+    path: "/hr/salary-structures",
+    name: "HRSalaryStructures",
+    component: SalaryStructures,
+    meta: { title: "Salary Structures" + appname, requiresAuth: true },
+  },
+  {
+    path: "/hr/salary-rules",
+    name: "HRSalaryRules",
+    component: SalaryRules,
+    meta: { title: "Salary Rules" + appname, requiresAuth: true },
+  },
+  {
+    path: "/hr/payslips",
+    name: "HRPayslips",
+    component: Payslips,
+    meta: { title: "Payslips" + appname, requiresAuth: true },
   },
 
   /* =====================
@@ -228,7 +338,7 @@ const routes = [
     meta: { title: "Maintenance" + appname, hideNav: true },
   },
 
-  // 404 (paling akhir)
+  // 404 (last)
   {
     path: "/404page",
     name: "Page404",
