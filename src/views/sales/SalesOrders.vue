@@ -11,17 +11,17 @@
         <input
           v-model="q.search"
           @keyup.enter="reload"
-          class="flex-1 lg:flex-none border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200"
+          class="flex-1 lg:flex-none border dark:border-gray-700 rounded-md px-3 py-2 dark:bg-gray-800 dark:text-gray-200"
           placeholder="Search number/customer…"
         />
-        <button @click="reload" class="bg-white dark:bg-gray-800 hover:border-gray-200 dark:hover:bg-gray-700 dark:text-white dark:border-gray-700 border rounded py-2 px-5">
+        <button @click="reload" class="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-white dark:border-gray-700 border rounded-md py-2 px-5">
           Search
         </button>
 
         <!-- From Quotation -->
         <button
           @click="openFromQuotation"
-          class="inline-flex items-center justify-center gap-2 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded py-2.5 px-5 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+          class="inline-flex items-center justify-center gap-2 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-md py-2.5 px-5 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
           title="Convert a quotation into Sales Order"
         >
           <Icon icon="mdi:file-convert-outline" class="text-xl" />
@@ -31,7 +31,7 @@
         <!-- New Order -->
         <button
           @click="openCreate"
-          class="inline-flex items-center justify-center gap-2 bg-primary text-white rounded py-2.5 px-5 hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/40 active:scale-[.98] transition"
+          class="inline-flex items-center justify-center gap-2 bg-primary text-white rounded-md py-2.5 px-5 hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/40 active:scale-[.98] transition"
           title="Create new sales order"
         >
           <Icon icon="ic:round-add" class="text-xl" />
@@ -49,7 +49,7 @@
             <select
               v-model="q.status"
               @change="reload"
-              class="border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200"
+              class="border dark:border-gray-700 rounded-md px-3 py-2 dark:bg-gray-800 dark:text-gray-200"
             >
               <option value="">All</option>
               <option v-for="s in statusOptions" :key="s" :value="s">{{ s }}</option>
@@ -61,7 +61,7 @@
             <select
               v-model.number="q.perPage"
               @change="reload"
-              class="border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200"
+              class="border dark:border-gray-700 rounded-md px-3 py-2 dark:bg-gray-800 dark:text-gray-200"
             >
               <option v-for="n in [10,20,50]" :key="n" :value="n">{{ n }}</option>
             </select>
@@ -101,11 +101,11 @@
                 <span :class="badge(r.status)">{{ (r.status || 'draft') }}</span>
               </td>
               <td class="px-6 py-3 text-right space-x-2 whitespace-nowrap">
-                <button @click="openView(r)" class="px-2 py-1 rounded border dark:border-gray-600" title="View">View</button>
-                <button v-if="canDeliver(r)" @click="deliver(r)" :disabled="saving" class="px-2 py-1 rounded border dark:border-gray-600" title="Deliver">Deliver</button>
-                <button v-if="canInvoice(r)" @click="makeInvoice(r)" :disabled="saving" class="px-2 py-1 rounded border dark:border-gray-600" title="Make Invoice">Make Invoice</button>
-                <button @click="openEdit(r)" class="px-2 py-1 rounded border dark:border-gray-600" title="Edit">Edit</button>
-                <button @click="confirmDelete(r)" :disabled="saving" class="px-2 py-1 rounded border dark:border-gray-600" title="Delete">Delete</button>
+                <button @click="openView(r)" class="px-3 py-1.5 rounded-md border dark:border-gray-600" title="View">View</button>
+                <button v-if="canDeliver(r)" @click="deliver(r)" :disabled="saving" class="px-3 py-1.5 rounded-md border dark:border-gray-600" title="Deliver">Deliver</button>
+                <button v-if="canInvoice(r)" @click="makeInvoice(r)" :disabled="saving" class="px-3 py-1.5 rounded-md border dark:border-gray-600" title="Make Invoice">Make Invoice</button>
+                <button @click="openEdit(r)" class="px-3 py-1.5 rounded-md border dark:border-gray-600" title="Edit">Edit</button>
+                <button @click="confirmDelete(r)" :disabled="saving" class="px-3 py-1.5 rounded-md border dark:border-gray-600" title="Delete">Delete</button>
               </td>
             </tr>
 
@@ -118,17 +118,14 @@
 
       <!-- Pagination -->
       <div class="px-5 py-4 flex items-center justify-between">
-        <button :disabled="!page.prev" @click="go(page.current - 1)" class="px-3 py-2 rounded border dark:border-gray-700 disabled:opacity-40">Prev</button>
+        <button :disabled="!page.prev" @click="go(page.current - 1)" class="px-3 py-2 rounded-md border dark:border-gray-700 disabled:opacity-40">Prev</button>
         <div class="text-sm text-gray-500 dark:text-gray-400">Page {{ page.current || 1 }} / {{ page.last || 1 }}</div>
-        <button :disabled="!page.next" @click="go(page.current + 1)" class="px-3 py-2 rounded border dark:border-gray-700 disabled:opacity-40">Next</button>
+        <button :disabled="!page.next" @click="go(page.current + 1)" class="px-3 py-2 rounded-md border dark:border-gray-700 disabled:opacity-40">Next</button>
       </div>
     </div>
 
     <!-- Modal: Create/Edit -->
-    <div
-      v-if="modal.open && modal.mode !== 'view'"
-      class="fixed inset-0 z-50 grid place-items-start md:place-items-center pt-6 md:pt-0"
-    >
+    <div v-if="modal.open && modal.mode !== 'view'" class="fixed inset-0 z-50 grid place-items-start md:place-items-center pt-6 md:pt-0">
       <div class="absolute inset-0 bg-black/40" @click="modal.open = false"></div>
       <div class="relative bg-white dark:bg-gray-800 rounded-md border dark:border-gray-700 w-full max-w-2xl p-5 max-h-[90vh] overflow-auto">
         <h3 class="text-lg font-semibold mb-4 dark:text-gray-200">{{ modal.mode === 'create' ? 'New Sales Order' : 'Edit Sales Order' }}</h3>
@@ -136,74 +133,71 @@
         <div class="grid md:grid-cols-2 gap-3">
           <div>
             <label class="block text-sm mb-1 dark:text-gray-300">Number</label>
-            <input v-model="form.number" class="w-full border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200" placeholder="Auto/Custom e.g. SO-202510-0001" />
+            <input v-model="form.number" class="w-full border dark:border-gray-700 rounded-md px-3 py-2 dark:bg-gray-800 dark:text-gray-200" placeholder="Auto/Custom e.g. SO-202510-0001" />
           </div>
 
           <div>
             <label class="block text-sm mb-1 dark:text-gray-300">Customer ID<span class="text-red-500">*</span></label>
-            <input v-model.number="form.customer_id" type="number" min="1" class="w-full border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200" placeholder="e.g. 1" />
+            <input v-model.number="form.customer_id" type="number" min="1" class="w-full border dark:border-gray-700 rounded-md px-3 py-2 dark:bg-gray-800 dark:text-gray-200" placeholder="e.g. 1" />
           </div>
 
           <div>
             <label class="block text-sm mb-1 dark:text-gray-300">Order Date<span class="text-red-500">*</span></label>
-            <input v-model="form.order_date" type="date" class="w-full border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200" />
+            <input v-model="form.order_date" type="date" class="w-full border dark:border-gray-700 rounded-md px-3 py-2 dark:bg-gray-800 dark:text-gray-200" />
           </div>
 
           <div>
             <label class="block text-sm mb-1 dark:text-gray-300">Currency</label>
-            <select v-model="form.currency" class="w-full border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200">
+            <select v-model="form.currency" class="w-full border dark:border-gray-700 rounded-md px-3 py-2 dark:bg-gray-800 dark:text-gray-200">
               <option v-for="c in ['IDR','USD','EUR','SGD','JPY']" :key="c" :value="c">{{ c }}</option>
             </select>
           </div>
 
           <div>
             <label class="block text-sm mb-1 dark:text-gray-300">Status</label>
-            <select v-model="form.status" class="w-full border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200">
+            <select v-model="form.status" class="w-full border dark:border-gray-700 rounded-md px-3 py-2 dark:bg-gray-800 dark:text-gray-200">
               <option v-for="s in statusOptions" :key="s" :value="s">{{ s }}</option>
             </select>
           </div>
 
           <div>
             <label class="block text-sm mb-1 dark:text-gray-300">Subtotal</label>
-            <input v-model.number="form.subtotal" type="number" min="0" step="0.01" class="w-full border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200" />
+            <input v-model.number="form.subtotal" type="number" min="0" step="0.01" class="w-full border dark:border-gray-700 rounded-md px-3 py-2 dark:bg-gray-800 dark:text-gray-200" />
           </div>
 
           <div>
             <label class="block text-sm mb-1 dark:text-gray-300">Tax Total</label>
-            <input v-model.number="form.tax_amount" type="number" min="0" step="0.01" class="w-full border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200" />
+            <input v-model.number="form.tax_amount" type="number" min="0" step="0.01" class="w-full border dark:border-gray-700 rounded-md px-3 py-2 dark:bg-gray-800 dark:text-gray-200" />
           </div>
 
           <div class="md:col-span-2">
             <label class="block text-sm mb-1 dark:text-gray-300">Total (auto)</label>
-            <input :value="moneyNumber(calcTotal)" disabled class="w-full border dark:border-gray-700 rounded px-3 py-2 bg-gray-50 dark:bg-gray-900/50 dark:text-gray-300" />
+            <input :value="moneyNumber(calcTotal)" disabled class="w-full border dark:border-gray-700 rounded-md px-3 py-2 bg-gray-50 dark:bg-gray-900/50 dark:text-gray-300" />
           </div>
 
           <div class="md:col-span-2">
             <label class="block text-sm mb-1 dark:text-gray-300">Notes</label>
-            <textarea v-model="form.notes" rows="3" class="w-full border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200"></textarea>
+            <textarea v-model="form.notes" rows="3" class="w-full border dark:border-gray-700 rounded-md px-3 py-2 dark:bg-gray-800 dark:text-gray-200"></textarea>
           </div>
         </div>
 
         <p v-if="error" class="text-sm text-red-500 mt-3">{{ error }}</p>
 
         <div class="mt-5 flex justify-end gap-2">
-          <button @click="modal.open = false" class="px-4 py-2 rounded border dark:border-gray-600">Cancel</button>
-          <button @click="save" :disabled="saving" class="px-4 py-2 rounded bg-primary text-white hover:bg-primary/80">{{ saving ? 'Saving…' : 'Save' }}</button>
+          <button @click="modal.open = false" class="px-4 py-2 rounded-md border dark:border-gray-600">Cancel</button>
+          <button @click="save" :disabled="saving" class="px-4 py-2 rounded-md bg-primary text-white hover:bg-primary/80">{{ saving ? 'Saving…' : 'Save' }}</button>
         </div>
       </div>
     </div>
 
     <!-- Modal: View -->
-    <div
-      v-if="modal.open && modal.mode === 'view'"
-      class="fixed inset-0 z-50 grid place-items-start md:place-items-center pt-6 md:pt-0"
-    >
+    <div v-if="modal.open && modal.mode === 'view'" class="fixed inset-0 z-50 grid place-items-start md:place-items-center pt-6 md:pt-0">
       <div class="absolute inset-0 bg-black/40" @click="modal.open = false"></div>
       <div class="relative bg-white dark:bg-gray-800 rounded-md border dark:border-gray-700 w-full max-w-3xl p-5 max-h-[90vh] overflow-auto">
         <h3 class="text-lg font-semibold mb-4 dark:text-gray-200">Sales Order Detail</h3>
 
         <div class="grid md:grid-cols-2 gap-3 text-sm">
-          <div class="bg-white dark:bg-gray-900 border dark:border-gray-700 rounded p-3">
+          <div class="bg-white dark:bg-gray-900 border dark:border-gray-700 rounded-md p-3">
             <p><span class="text-gray-500">Number:</span> {{ form.number || ('SO-' + form.id) }}</p>
             <p><span class="text-gray-500">Customer ID:</span> {{ form.customer_id }}</p>
             <p><span class="text-gray-500">Order Date:</span> {{ fmtDate(form.order_date) || '—' }}</p>
@@ -215,7 +209,7 @@
             <p v-if="form.notes" class="md:col-span-2"><span class="text-gray-500">Notes:</span> {{ form.notes }}</p>
           </div>
 
-          <div class="bg-white dark:bg-gray-900 border dark:border-gray-700 rounded p-3">
+          <div class="bg-white dark:bg-gray-900 border dark:border-gray-700 rounded-md p-3">
             <p class="flex justify-between"><span class="text-gray-500">Subtotal</span><span>Rp{{ money(form.subtotal) }}</span></p>
             <p class="flex justify-between"><span class="text-gray-500">Tax</span><span>Rp{{ money(form.tax_amount) }}</span></p>
             <p class="flex justify-between font-semibold"><span>Total</span><span>Rp{{ money(calcTotal) }}</span></p>
@@ -223,28 +217,25 @@
         </div>
 
         <div class="mt-5 flex flex-wrap gap-2 justify-end">
-          <button v-if="canDeliver(form)" @click="deliver(form)" :disabled="saving" class="px-4 py-2 rounded border dark:border-gray-700">Deliver</button>
-          <button v-if="canInvoice(form)" @click="makeInvoice(form)" :disabled="saving" class="px-4 py-2 rounded bg-primary text-white hover:bg-primary/80">Make Invoice</button>
-          <button @click="modal.open = false" class="px-4 py-2 rounded border dark:border-gray-600">Close</button>
+          <button v-if="canDeliver(form)" @click="deliver(form)" :disabled="saving" class="px-4 py-2 rounded-md border dark:border-gray-700">Deliver</button>
+          <button v-if="canInvoice(form)" @click="makeInvoice(form)" :disabled="saving" class="px-4 py-2 rounded-md bg-primary text-white hover:bg-primary/80">Make Invoice</button>
+          <button @click="modal.open = false" class="px-4 py-2 rounded-md border dark:border-gray-600">Close</button>
         </div>
       </div>
     </div>
 
     <!-- Modal: From Quotation -->
-    <div
-      v-if="modalQuotation"
-      class="fixed inset-0 z-50 grid place-items-start md:place-items-center pt-6 md:pt-0"
-    >
+    <div v-if="modalQuotation" class="fixed inset-0 z-50 grid place-items-start md:place-items-center pt-6 md:pt-0">
       <div class="absolute inset-0 bg-black/40" @click="modalQuotation = false"></div>
       <div class="relative bg-white dark:bg-gray-800 rounded-md border dark:border-gray-700 w-full max-w-md p-5 max-h-[90vh] overflow-auto">
         <h3 class="text-lg font-semibold mb-4 dark:text-gray-200">Create from Quotation</h3>
         <label class="block text-sm mb-1 dark:text-gray-300">Quotation ID</label>
-        <input v-model.number="quotationId" type="number" min="1" class="w-full border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200" placeholder="e.g. 12" @keyup.enter="convertFromQuotation" />
-        <p class="text-xs text-gray-500 mt-2">Calls <code>POST /api/quotations/:id/convert</code>.</p>
+        <input v-model.number="quotationId" type="number" min="1" class="w-full border dark:border-gray-700 rounded-md px-3 py-2 dark:bg-gray-800 dark:text-gray-200" placeholder="e.g. 12" @keyup.enter="convertFromQuotation" />
+        <p class="text-xs text-gray-500 mt-2">Calls <code>POST /api/sales/quotations/:id/convert</code>.</p>
         <p v-if="error" class="text-sm text-red-500 mt-3">{{ error }}</p>
         <div class="mt-5 flex justify-end gap-2">
-          <button @click="modalQuotation = false" class="px-4 py-2 rounded border dark:border-gray-600">Cancel</button>
-          <button @click="convertFromQuotation" :disabled="saving" class="px-4 py-2 rounded bg-primary text-white hover:bg-primary/80">
+          <button @click="modalQuotation = false" class="px-4 py-2 rounded-md border dark:border-gray-600">Cancel</button>
+          <button @click="convertFromQuotation" :disabled="saving" class="px-4 py-2 rounded-md bg-primary text-white hover:bg-primary/80">
             {{ saving ? 'Converting…' : 'Convert' }}
           </button>
         </div>
@@ -252,9 +243,12 @@
     </div>
 
     <!-- Toast fallback -->
-    <div v-if="error" class="fixed bottom-4 right-4 bg-red-600 text-white text-sm px-4 py-3 rounded shadow">
+    <div v-if="error" class="fixed bottom-4 right-4 bg-red-600 text-white text-sm px-4 py-3 rounded-md shadow">
       {{ error }}
     </div>
+
+    <!-- Top loading bar -->
+    <div v-if="loading" class="fixed left-0 right-0 top-0 h-1 bg-primary animate-pulse"></div>
   </div>
 </template>
 
@@ -307,9 +301,7 @@ export default {
     },
   },
 
-  mounted() {
-    this.reload();
-  },
+  mounted() { this.reload(); },
 
   methods: {
     toast(icon, title) {
@@ -327,9 +319,30 @@ export default {
         baseURL: `${API_BASE}/api`,
         headers: { Accept: "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       });
+
+      // 🔧 Auto-prefix semua resource Sales ke /sales/*
+      const SALES_PREFIX_TARGETS = [
+        "/customers", "/products", "/pricelists",
+        "/quotations", "/quotation-items", "/quotation-logs",
+        "/orders", "/invoices"
+      ];
+      instance.interceptors.request.use((cfg) => {
+        if (typeof cfg.url === "string") {
+          const u = cfg.url;
+          const need = SALES_PREFIX_TARGETS.some(p => u.startsWith(p) || u.startsWith(p + "/"));
+          const already = u.startsWith("/sales/");
+          if (need && !already) cfg.url = "/sales" + u;
+        }
+        return cfg;
+      });
+
       instance.interceptors.response.use(
         (res) => res,
         (err) => {
+          // tampilkan error di console supaya kelihatan saat dev
+          // (kalau 401 akan diarahkan ke login)
+          // eslint-disable-next-line no-console
+          console.error("API error:", err?.response || err);
           if (err?.response?.status === 401) {
             localStorage.removeItem("token");
             localStorage.removeItem("user");
@@ -340,17 +353,16 @@ export default {
       );
       return instance;
     },
+
     money(n) { return Number(n || 0).toLocaleString("id-ID"); },
     moneyNumber(n) { return Number(n || 0).toLocaleString("id-ID", { minimumFractionDigits: 0 }); },
     fmtDate(d) {
       if (!d) return "";
-      try {
-        const x = new Date(d);
-        return isNaN(+x) ? String(d).slice(0, 10) : x.toLocaleDateString("id-ID");
-      } catch { return String(d).slice(0, 10); }
+      try { const x = new Date(d); return isNaN(+x) ? String(d).slice(0, 10) : x.toLocaleDateString("id-ID"); }
+      catch { return String(d).slice(0, 10); }
     },
     badge(st) {
-      const base = "px-2 py-1 text-xs rounded capitalize";
+      const base = "px-2 py-1 text-xs rounded-md capitalize";
       const s = String(st || "draft").toLowerCase();
       const map = {
         draft: "bg-gray-100 text-gray-700",
@@ -362,10 +374,7 @@ export default {
       return `${base} ${map[s] || map.draft}`;
     },
     canDeliver(r) { return String(r?.status || "").toLowerCase() === "confirmed"; },
-    canInvoice(r) {
-      const s = String(r?.status || "").toLowerCase();
-      return s === "confirmed" || s === "delivered";
-    },
+    canInvoice(r) { const s = String(r?.status || "").toLowerCase(); return s === "confirmed" || s === "delivered"; },
     cleanParams(raw) {
       const p = { ...raw };
       if (!String(p.search || "").trim()) delete p.search;
@@ -373,102 +382,97 @@ export default {
       return p;
     },
 
+    // --- Bentuk respons yang didukung:
+    // A) Array langsung:                  [...]
+    // B) Laravel paginator standar:       { data: [...], current_page, last_page, ... }
+    // C) items + meta:                     { items: [...], meta: { page, per_page, total, ... } }
+    // D) Nested paginator:                 { data: { data: [...], current_page, ... } }
+    normalizeListResponse(payload) {
+      // list rows
+      let list =
+        (Array.isArray(payload?.data) && payload.data) ||
+        (Array.isArray(payload?.items) && payload.items) ||
+        (Array.isArray(payload?.results) && payload.results) ||
+        (Array.isArray(payload?.data?.data) && payload.data.data) ||
+        (Array.isArray(payload) && payload) ||
+        [];
+
+      // meta / paging
+      const meta = payload?.meta || payload?.data || payload || {};
+      const current =
+        Number(meta.current_page ?? meta.page ?? meta.currentPage ?? 1);
+      const last =
+        Number(meta.last_page ?? meta.total_pages ?? meta.lastPage ?? 1);
+      const total =
+        Number(meta.total ?? meta.totalItems ?? meta.total_count ?? list.length);
+      const from =
+        Number(meta.from ?? (list.length ? (current - 1) * Number(this.q.perPage) + 1 : 0));
+      const to =
+        Number(meta.to ?? Math.min(from + list.length - 1, total || list.length));
+
+      return { list, paging: { current, last, total, from, to } };
+    },
+
     async reload() {
-      this.loading = true;
-      this.error = "";
+      this.loading = true; this.error = "";
       try {
         const params = this.cleanParams({
-          page: this.q.page,
-          per_page: this.q.perPage,
-          search: this.q.search,
-          status: this.q.status,
+          page: this.q.page, per_page: this.q.perPage, search: this.q.search, status: this.q.status,
         });
 
-        // prefer /sales-orders, fallback /orders jika 404
-        let data;
-        try {
-          ({ data } = await this.api().get("/sales-orders", { params }));
-        } catch (e) {
-          if (e?.response?.status === 404) {
-            ({ data } = await this.api().get("/orders", { params }));
-          } else {
-            throw e;
-          }
-        }
+        const { data } = await this.api().get("/orders", { params }); // → /api/sales/orders (auto-prefix)
+        const { list, paging } = this.normalizeListResponse(data);
 
-        const rows = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
-        this.rows = rows.map((r) => ({
+        this.rows = list.map((r) => ({
           ...r,
-          status: String(r.status || "draft").toLowerCase(),
-          subtotal: Number(r.subtotal || 0),
-          tax_amount: Number(r.tax_amount ?? r.tax ?? 0),
-          total: Number(r.total ?? (Number(r.subtotal || 0) + Number(r.tax_amount ?? r.tax ?? 0))),
+          status: String(r?.status ?? "draft").toLowerCase(),
+          subtotal: Number(r?.subtotal ?? 0),
+          tax_amount: Number(r?.tax_amount ?? r?.tax ?? 0),
+          total: Number(r?.total ?? (Number(r?.subtotal ?? 0) + Number(r?.tax_amount ?? r?.tax ?? 0))),
         }));
 
         this.page = {
-          current: Number(data.current_page || 1),
-          last: Number(data.last_page || 1),
-          total: Number(data.total || this.rows.length),
-          from: Number(data.from || (this.rows.length ? 1 : 0)),
-          to: Number(data.to || this.rows.length),
-          prev: Number(data.current_page || 1) > 1,
-          next: Number(data.current_page || 1) < Number(data.last_page || 1),
+          current: paging.current || 1,
+          last: paging.last || 1,
+          total: paging.total || this.rows.length,
+          from: paging.from || (this.rows.length ? 1 : 0),
+          to: paging.to || this.rows.length,
+          prev: (paging.current || 1) > 1,
+          next: (paging.current || 1) < (paging.last || 1),
         };
       } catch (e) {
         this.error = e?.response?.data?.message || "Gagal memuat Sales Orders";
-      } finally {
-        this.loading = false;
-      }
+      } finally { this.loading = false; }
     },
 
-    go(p) {
-      this.q.page = Math.max(1, p);
-      this.reload();
-    },
+    go(p) { this.q.page = Math.max(1, p); this.reload(); },
 
     openCreate() {
       this.modal = { open: true, mode: "create" };
       this.error = ""; this.fieldErrors = {};
       const today = new Date().toISOString().slice(0, 10);
-      this.form = {
-        id: null, number: "", customer_id: null, order_date: today, currency: "IDR",
-        status: "draft", subtotal: 0, tax_amount: 0, notes: ""
-      };
+      this.form = { id:null, number:"", customer_id:null, order_date:today, currency:"IDR", status:"draft", subtotal:0, tax_amount:0, notes:"" };
     },
     openEdit(row) {
       this.modal = { open: true, mode: "edit" };
       this.error = ""; this.fieldErrors = {};
       this.form = {
-        id: row.id,
-        number: row.number || "",
-        customer_id: row.customer_id || null,
-        order_date: row.order_date || "",
-        currency: row.currency || "IDR",
+        id: row.id, number: row.number || "", customer_id: row.customer_id || null,
+        order_date: row.order_date || "", currency: row.currency || "IDR",
         status: String(row.status || "draft").toLowerCase(),
-        subtotal: Number(row.subtotal || 0),
-        tax_amount: Number(row.tax_amount ?? row.tax ?? 0),
+        subtotal: Number(row.subtotal || 0), tax_amount: Number(row.tax_amount ?? row.tax ?? 0),
         notes: row.notes || "",
       };
     },
     openView(row) {
       this.modal = { open: true, mode: "view" };
       this.form = {
-        id: row.id,
-        number: row.number,
-        customer_id: row.customer_id,
-        order_date: row.order_date,
-        currency: row.currency,
-        status: String(row.status || "draft").toLowerCase(),
-        subtotal: Number(row.subtotal || 0),
-        tax_amount: Number(row.tax_amount ?? row.tax ?? 0),
-        notes: row.notes,
+        id: row.id, number: row.number, customer_id: row.customer_id, order_date: row.order_date,
+        currency: row.currency, status: String(row.status || "draft").toLowerCase(),
+        subtotal: Number(row.subtotal || 0), tax_amount: Number(row.tax_amount ?? row.tax ?? 0), notes: row.notes,
       };
     },
-    openFromQuotation() {
-      this.error = "";
-      this.quotationId = null;
-      this.modalQuotation = true;
-    },
+    openFromQuotation() { this.error = ""; this.quotationId = null; this.modalQuotation = true; },
 
     toPayload() {
       const t = (v) => (typeof v === "string" ? v.trim() : v);
@@ -486,25 +490,20 @@ export default {
     },
 
     async save() {
-      this.saving = true;
-      this.error = "";
-      this.fieldErrors = {};
-
+      this.saving = true; this.error = ""; this.fieldErrors = {};
       if (!this.form.customer_id) { this.saving = false; this.error = "Customer ID wajib diisi."; return; }
-      if (!this.form.order_date) { this.saving = false; this.error = "Order Date wajib diisi."; return; }
+      if (!this.form.order_date)  { this.saving = false; this.error = "Order Date wajib diisi."; return; }
 
       try {
         const payload = this.toPayload();
         if (this.modal.mode === "create") {
-          await this.tryPost("/sales-orders", "/orders", payload);
+          await this.api().post("/orders", payload); // → /api/sales/orders
           this.toast("success", "Order created");
         } else {
-          const id = this.form.id;
-          await this.tryPut(`/sales-orders/${id}`, `/orders/${id}`, payload);
+          await this.api().put(`/orders/${this.form.id}`, payload);
           this.toast("success", "Order updated");
         }
-        this.modal.open = false;
-        await this.reload();
+        this.modal.open = false; await this.reload();
       } catch (e) {
         if (e?.response?.status === 422) {
           this.fieldErrors = e.response.data?.errors || {};
@@ -522,10 +521,8 @@ export default {
       this.saving = true; this.error = "";
       try {
         const qid = Number(this.quotationId);
-        await this.api().post(`/quotations/${qid}/convert`);
-        this.modalQuotation = false;
-        this.toast("success", "Converted");
-        await this.reload();
+        await this.api().post(`/quotations/${qid}/convert`); // → /api/sales/quotations/:id/convert
+        this.modalQuotation = false; this.toast("success", "Converted"); await this.reload();
       } catch (e) {
         this.error = e?.response?.data?.message || "Gagal convert quotation";
         this.toast("error", this.error);
@@ -537,14 +534,9 @@ export default {
       const res = await Swal.fire({ title: `Deliver ${row.number || ('#' + row.id)}?`, icon: "question", showCancelButton: true, confirmButtonText: "Yes", cancelButtonText: "Cancel" });
       if (!res.isConfirmed) return;
       this.saving = true; this.error = "";
-      try {
-        await this.tryPost(`/sales-orders/${row.id}/deliver`, `/orders/${row.id}/deliver`);
-        this.toast("success", "Delivered");
-        await this.reload();
-      } catch (e) {
-        this.error = e?.response?.data?.message || "Gagal melakukan deliver";
-        this.toast("error", this.error);
-      } finally { this.saving = false; }
+      try { await this.api().post(`/orders/${row.id}/deliver`); this.toast("success", "Delivered"); await this.reload(); }
+      catch (e) { this.error = e?.response?.data?.message || "Gagal melakukan deliver"; this.toast("error", this.error); }
+      finally { this.saving = false; }
     },
 
     async makeInvoice(row) {
@@ -552,14 +544,9 @@ export default {
       const res = await Swal.fire({ title: `Create invoice from ${row.number || ('#' + row.id)}?`, icon: "question", showCancelButton: true, confirmButtonText: "Yes", cancelButtonText: "Cancel" });
       if (!res.isConfirmed) return;
       this.saving = true; this.error = "";
-      try {
-        await this.tryPost(`/sales-orders/${row.id}/invoice`, `/orders/${row.id}/invoice`);
-        this.toast("success", "Invoice created");
-        await this.reload();
-      } catch (e) {
-        this.error = e?.response?.data?.message || "Gagal membuat invoice";
-        this.toast("error", this.error);
-      } finally { this.saving = false; }
+      try { await this.api().post(`/orders/${row.id}/invoice`); this.toast("success", "Invoice created"); await this.reload(); }
+      catch (e) { this.error = e?.response?.data?.message || "Gagal membuat invoice"; this.toast("error", this.error); }
+      finally { this.saving = false; }
     },
 
     async confirmDelete(row) {
@@ -576,27 +563,9 @@ export default {
       if (!res.isConfirmed) return;
 
       this.saving = true; this.error = "";
-      try {
-        await this.tryDelete(`/sales-orders/${row.id}`, `/orders/${row.id}`);
-        this.toast("success", "Deleted");
-        await this.reload();
-      } catch (e) {
-        this.error = e?.response?.data?.message || "Gagal menghapus order";
-        this.toast("error", this.error);
-      } finally { this.saving = false; }
-    },
-
-    async tryPost(primary, fallback, payload = undefined) {
-      try { return await this.api().post(primary, payload); }
-      catch (e) { if (e?.response?.status === 404 && fallback) return this.api().post(fallback, payload); throw e; }
-    },
-    async tryPut(primary, fallback, payload = undefined) {
-      try { return await this.api().put(primary, payload); }
-      catch (e) { if (e?.response?.status === 404 && fallback) return this.api().put(fallback, payload); throw e; }
-    },
-    async tryDelete(primary, fallback) {
-      try { return await this.api().delete(primary); }
-      catch (e) { if (e?.response?.status === 404 && fallback) return this.api().delete(fallback); throw e; }
+      try { await this.api().delete(`/orders/${row.id}`); this.toast("success", "Deleted"); await this.reload(); }
+      catch (e) { this.error = e?.response?.data?.message || "Gagal menghapus order"; this.toast("error", this.error); }
+      finally { this.saving = false; }
     },
   },
 };

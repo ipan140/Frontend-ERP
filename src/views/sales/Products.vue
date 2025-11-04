@@ -299,13 +299,24 @@ export default {
         "http://localhost:8000";
       return String(raw).trim().replace(/\/+$/, "");
     },
+
     api() {
       const token = localStorage.getItem("token");
       const API_BASE = this.resolveBaseUrl();
+
       const instance = axios.create({
         baseURL: `${API_BASE}/api`,
         headers: { Accept: "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       });
+
+      // NEW: auto-rewrite agar "/products" -> "/sales/products" TANPA ubah call-site
+      instance.interceptors.request.use((cfg) => {
+        if (typeof cfg.url === "string" && cfg.url.startsWith("/products")) {
+          cfg.url = "/sales" + cfg.url; // contoh: /products -> /sales/products
+        }
+        return cfg;
+      });
+
       instance.interceptors.response.use(
         (res) => res,
         (err) => {
@@ -320,7 +331,11 @@ export default {
       return instance;
     },
 
-    formatNumber(n) { return Number(n || 0).toLocaleString("id-ID"); },
+    formatNumber(n) {
+      const v = Number(n);
+      return (isNaN(v) ? 0 : v).toLocaleString("id-ID");
+    },
+
     cleanParams(raw) {
       const p = { ...raw };
       if (p.active !== "0" && p.active !== "1") delete p.active;
@@ -335,11 +350,12 @@ export default {
         const params = this.cleanParams({
           page: this.q.page, per_page: this.q.perPage, search: this.q.search, active: this.q.active,
         });
+        // tetap panggil "/products" — interceptor akan mengalihkan ke "/sales/products"
         const { data } = await this.api().get("/products", { params });
         const rows = Array.isArray(data?.data) ? data.data : [];
         this.rows = rows.map((r) => ({
           ...r,
-          base_price: Number(r.base_price || 0),
+          base_price: Number.isFinite(Number(r.base_price)) ? Number(r.base_price) : 0, // NEW: aman NaN
           active: r.active === 1 || r.active === "1" || r.active === true,
         }));
         this.page = {
@@ -362,8 +378,8 @@ export default {
 
     /* View */
     async openView(row) {
-      // kalau ada endpoint show /products/:id, ambil detail/relasi; else tampilkan data row
       try {
+        // tetap "/products/:id" — akan di-rewrite oleh interceptor
         const { data } = await this.api().get(`/products/${row.id}`);
         const r = data?.data || data || row;
         this.view = {
@@ -373,16 +389,12 @@ export default {
             sku: r.sku,
             name: r.name,
             uom: r.uom,
-            base_price: Number(r.base_price || 0),
+            base_price: Number.isFinite(Number(r.base_price)) ? Number(r.base_price) : 0, // NEW
             active: r.active === 1 || r.active === "1" || r.active === true,
           },
-          extra: {
-            created_at: r.created_at || null,
-            updated_at: r.updated_at || null,
-          },
+          extra: { created_at: r.created_at || null, updated_at: r.updated_at || null },
         };
       } catch {
-        // fallback kalau /show tidak ada
         this.view = { open: true, row, extra: {} };
       }
     },
@@ -401,7 +413,7 @@ export default {
         sku: row.sku || "",
         name: row.name || "",
         uom: row.uom || "",
-        base_price: Number(row.base_price || 0),
+        base_price: Number.isFinite(Number(row.base_price)) ? Number(row.base_price) : 0, // NEW
         active: !!row.active,
       };
     },
@@ -411,23 +423,24 @@ export default {
         sku: (this.form.sku || "").trim(),
         name: (this.form.name || "").trim(),
         uom: (this.form.uom || "").trim() || null,
-        base_price: Number(this.form.base_price || 0),
+        base_price: Number.isFinite(Number(this.form.base_price)) ? Number(this.form.base_price) : 0, // NEW
         active: this.form.active ? 1 : 0,
       };
     },
 
     /* Save */
     async save() {
+      if (this.saving) return;          // NEW: cegah double-click
       this.saving = true; this.error = ""; this.fieldErrors = {};
 
       if (!String(this.form.sku || "").trim()) { this.saving = false; this.toast("warning","SKU wajib diisi."); this.error="SKU wajib diisi."; return; }
       if (!String(this.form.name || "").trim()) { this.saving = false; this.toast("warning","Name wajib diisi."); this.error="Name wajib diisi."; return; }
-      if (Number(this.form.base_price) < 0) { this.saving = false; this.toast("warning","Base price tidak boleh negatif."); this.error="Base price tidak boleh negatif."; return; }
+      if (Number(this.form.base_price) < 0)       { this.saving = false; this.toast("warning","Base price tidak boleh negatif."); this.error="Base price tidak boleh negatif."; return; }
 
       try {
         const payload = this.toPayload();
         if (this.modal.mode === "create") {
-          await this.api().post("/products", payload);
+          await this.api().post("/products", payload);  // akan di-rewrite ke /sales/products
           this.toast("success", "Product created");
         } else {
           await this.api().put(`/products/${this.form.id}`, payload);
@@ -463,7 +476,7 @@ export default {
 
       this.saving = true; this.error = "";
       try {
-        await this.api().delete(`/products/${row.id}`);
+        await this.api().delete(`/products/${row.id}`); // auto-rewrite
         this.toast("success", "Product deleted");
         await this.reload();
       } catch (e) {

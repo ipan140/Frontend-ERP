@@ -96,34 +96,13 @@
               <td class="px-6 py-3">{{ r.payment_term_name || r.payment_term_id || '-' }}</td>
               <td class="px-6 py-3 text-right">Rp{{ formatNumber(r.credit_limit) }}</td>
               <td class="px-6 py-3">
-                <span v-if="r.is_active"
-                      class="px-2 py-1 text-xs rounded bg-green-100 text-green-700">Active</span>
-                <span v-else
-                      class="px-2 py-1 text-xs rounded bg-red-100 text-red-700">Inactive</span>
+                <span v-if="r.is_active" class="px-2 py-1 text-xs rounded bg-green-100 text-green-700">Active</span>
+                <span v-else class="px-2 py-1 text-xs rounded bg-red-100 text-red-700">Inactive</span>
               </td>
               <td class="px-6 py-3 text-right space-x-2">
-                <button
-                  @click="openView(r)"
-                  class="px-2 py-1 rounded border dark:border-gray-600"
-                  title="View"
-                >
-                  View
-                </button>
-                <button
-                  @click="openEdit(r)"
-                  class="px-2 py-1 rounded border dark:border-gray-600"
-                  title="Edit"
-                >
-                  Edit
-                </button>
-                <button
-                  @click="confirmDelete(r)"
-                  class="px-2 py-1 rounded border dark:border-gray-600"
-                  :disabled="saving"
-                  title="Delete"
-                >
-                  Delete
-                </button>
+                <button @click="openView(r)" class="px-2 py-1 rounded border dark:border-gray-600" title="View">View</button>
+                <button @click="openEdit(r)" class="px-2 py-1 rounded border dark:border-gray-600" title="Edit">Edit</button>
+                <button @click="confirmDelete(r)" class="px-2 py-1 rounded border dark:border-gray-600" :disabled="saving" title="Delete">Delete</button>
               </td>
             </tr>
 
@@ -136,21 +115,13 @@
 
       <!-- Pagination -->
       <div class="px-5 py-4 flex items-center justify-between">
-        <button
-          :disabled="!page.prev"
-          @click="go(page.current - 1)"
-          class="px-3 py-2 rounded border dark:border-gray-700 disabled:opacity-40"
-        >
+        <button :disabled="!page.prev" @click="go(page.current - 1)" class="px-3 py-2 rounded border dark:border-gray-700 disabled:opacity-40">
           Prev
         </button>
         <div class="text-sm text-gray-500 dark:text-gray-400">
           Page {{ page.current || 1 }} / {{ page.last || 1 }}
         </div>
-        <button
-          :disabled="!page.next"
-          @click="go(page.current + 1)"
-          class="px-3 py-2 rounded border dark:border-gray-700 disabled:opacity-40"
-        >
+        <button :disabled="!page.next" @click="go(page.current + 1)" class="px-3 py-2 rounded border dark:border-gray-700 disabled:opacity-40">
           Next
         </button>
       </div>
@@ -249,10 +220,8 @@
       </div>
     </div>
 
-    <!-- Toast fallback -->
-    <div v-if="error" class="fixed bottom-4 right-4 bg-red-600 text-white text-sm px-4 py-3 rounded shadow">
-      {{ error }}
-    </div>
+    <!-- Loading bar -->
+    <div v-if="loading" class="fixed left-0 right-0 top-0 h-1 bg-primary animate-pulse"></div>
   </div>
 </template>
 
@@ -297,11 +266,22 @@ export default {
   },
 
   methods: {
+    // ===== SweetAlert helpers =====
     toast(icon, title) {
-      const T = Swal.mixin({ toast: true, position: "top-end", showConfirmButton: false, timer: 1500, timerProgressBar: true });
+      const T = Swal.mixin({
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 1600,
+        timerProgressBar: true,
+      });
       T.fire({ icon, title });
     },
+    alert(icon, title, text) {
+      return Swal.fire({ icon, title, text });
+    },
 
+    // ====== Base URL helper ======
     resolveBaseUrl() {
       const raw =
         import.meta?.env?.VITE_API_BASE ||
@@ -309,11 +289,13 @@ export default {
         "http://localhost:8000";
       return String(raw).trim().replace(/\/+$/, "");
     },
+
+    // ====== Axios instance (BASE: /api/sales) ======
     api() {
       const token = localStorage.getItem("token");
       const API_BASE = this.resolveBaseUrl();
       const instance = axios.create({
-        baseURL: `${API_BASE}/api`,
+        baseURL: `${API_BASE}/api/sales`,
         headers: {
           Accept: "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -393,7 +375,9 @@ export default {
           next: Number(data.current_page || 1) < Number(data.last_page || 1),
         };
       } catch (e) {
-        this.error = e?.response?.data?.message || "Gagal memuat data pelanggan";
+        const msg = e?.response?.data?.message || "Gagal memuat data pelanggan";
+        this.error = msg;
+        this.alert("error", "Load gagal", msg);
       } finally {
         this.loading = false;
       }
@@ -455,23 +439,28 @@ export default {
     },
 
     async save() {
+      if (this.saving) return;
       this.saving = true;
       this.error = "";
       this.fieldErrors = {};
 
+      // Client-side quick checks
       if (!String(this.form.code || "").trim()) {
         this.saving = false;
         this.error = "Code wajib diisi.";
+        this.alert("warning", "Validasi", this.error);
         return;
       }
       if (!String(this.form.name || "").trim()) {
         this.saving = false;
         this.error = "Name wajib diisi.";
+        this.alert("warning", "Validasi", this.error);
         return;
       }
       if (Number(this.form.credit_limit) < 0) {
         this.saving = false;
         this.error = "Credit limit tidak boleh negatif.";
+        this.alert("warning", "Validasi", this.error);
         return;
       }
 
@@ -489,14 +478,16 @@ export default {
       } catch (e) {
         if (e?.response?.status === 422) {
           this.fieldErrors = e.response.data?.errors || {};
-          this.error =
-            Object.values(this.fieldErrors)[0]?.[0] ||
+          const msg =
+            Object.values(this.fieldErrors)?.[0]?.[0] ||
             e.response.data?.message ||
             "Validasi gagal";
-          this.toast("error", this.error);
+          this.error = msg;
+          this.alert("error", "Validasi gagal", msg);
         } else {
-          this.error = e?.response?.data?.message || "Gagal menyimpan customer";
-          this.toast("error", this.error);
+          const msg = e?.response?.data?.message || "Gagal menyimpan customer";
+          this.error = msg;
+          this.alert("error", "Gagal", msg);
         }
       } finally {
         this.saving = false;
@@ -522,8 +513,9 @@ export default {
         this.toast("success", "Deleted");
         await this.reload();
       } catch (e) {
-        this.error = e?.response?.data?.message || "Gagal menghapus customer";
-        this.toast("error", this.error);
+        const msg = e?.response?.data?.message || "Gagal menghapus customer";
+        this.error = msg;
+        this.alert("error", "Gagal", msg);
       } finally {
         this.saving = false;
       }

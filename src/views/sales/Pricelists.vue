@@ -7,11 +7,11 @@
         <h1 class="text-2xl text-gray-900 dark:text-gray-200 font-medium">Pricelists</h1>
       </div>
 
-      <div class="flex gap-2">
+      <div class="flex gap-2 w-full lg:w-auto">
         <input
           v-model="q.search"
           @keyup.enter="reload()"
-          class="border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200"
+          class="flex-1 lg:flex-none border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200"
           placeholder="Search name/description…"
         />
         <button
@@ -20,12 +20,17 @@
         >
           Search
         </button>
+
+        <!-- FIXED BUTTON: solid, ikon plus rapi -->
         <button
           @click="openCreate()"
-          class="bg-primary border flex gap-2 text-white hover:bg-primary/80 dark:border-gray-700 rounded py-2.5 px-5"
+          class="inline-flex items-center gap-2 rounded-lg px-5 py-2.5 bg-primary text-white
+                 hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/40
+                 active:scale-[.98] transition shadow-sm"
+          title="Create new pricelist"
         >
-          <span class="text-2xl">+</span>
-          <span>New Pricelist</span>
+          <Icon icon="ic:round-add" class="text-xl" />
+          <span class="font-medium">New Pricelist</span>
         </button>
       </div>
     </div>
@@ -177,6 +182,7 @@
               <option value="sale">sale</option>
               <option value="purchase">purchase</option>
             </select>
+            <p v-if="fieldErrors.type" class="text-xs text-red-500 mt-1">{{ fieldErrors.type[0] }}</p>
           </div>
 
           <div>
@@ -184,22 +190,26 @@
             <select v-model="form.currency" class="w-full border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200">
               <option v-for="c in currencies" :key="c" :value="c">{{ c }}</option>
             </select>
+            <p v-if="fieldErrors.currency" class="text-xs text-red-500 mt-1">{{ fieldErrors.currency[0] }}</p>
           </div>
 
           <div>
             <label class="block text-sm mb-1 dark:text-gray-300">Valid From<span class="text-red-500">*</span></label>
             <input type="date" v-model="form.valid_from" class="w-full border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200" />
+            <p v-if="fieldErrors.valid_from" class="text-xs text-red-500 mt-1">{{ fieldErrors.valid_from[0] }}</p>
           </div>
 
           <div>
             <label class="block text-sm mb-1 dark:text-gray-300">Valid Until</label>
             <input type="date" v-model="form.valid_until" class="w-full border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200" />
             <p class="text-xs text-gray-500 mt-1">Kosongkan bila tidak dibatasi (NULL).</p>
+            <p v-if="fieldErrors.valid_until" class="text-xs text-red-500 mt-1">{{ fieldErrors.valid_until[0] }}</p>
           </div>
 
           <div class="md:col-span-2">
             <label class="block text-sm mb-1 dark:text-gray-300">Description</label>
             <textarea v-model="form.description" rows="3" class="w-full border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200"></textarea>
+            <p v-if="fieldErrors.description" class="text-xs text-red-500 mt-1">{{ fieldErrors.description[0] }}</p>
           </div>
 
           <div class="flex items-center gap-2 mt-2 md:col-span-2">
@@ -218,14 +228,22 @@
         </div>
       </div>
     </div>
+
+    <!-- Simple loading bar -->
+    <div v-if="loading" class="fixed left-0 right-0 top-0 h-1 bg-primary animate-pulse"></div>
   </div>
 </template>
 
 <script>
 import axios from "axios";
+import Swal from "sweetalert2";
+import { Icon } from "@iconify/vue";
+// import 'sweetalert2/dist/sweetalert2.min.css' // kalau mau global css
 
 export default {
   name: "Pricelists",
+  components: { Icon },
+
   data() {
     return {
       loading: false,
@@ -258,6 +276,12 @@ export default {
   },
 
   methods: {
+    // SweetAlert helpers
+    toast(icon, title) {
+      const T = Swal.mixin({ toast: true, position: "top-end", showConfirmButton: false, timer: 1600, timerProgressBar: true });
+      T.fire({ icon, title });
+    },
+
     resolveBaseUrl() {
       const raw =
         import.meta?.env?.VITE_API_BASE ||
@@ -294,12 +318,10 @@ export default {
 
     fmtDate(d) {
       if (!d) return "";
-      // Terima "YYYY-MM-DD" atau "YYYY-MM-DD HH:MM:SS"
       return String(d).slice(0, 10);
     },
 
     cleanParams(raw) {
-      // Hapus nilai kosong & hanya kirim active jika '0' atau '1'
       const p = { ...raw };
       if (p.active !== "0" && p.active !== "1") delete p.active;
       if (!p.type) delete p.type;
@@ -329,12 +351,12 @@ export default {
           page: this.q.page,
           per_page: this.q.perPage,
           search: this.q.search,
-          active: this.q.active,   // "" | "1" | "0"
+          active: this.q.active,
           type: this.q.type,
           currency: this.q.currency,
         });
 
-        const { data } = await this.api().get("/pricelists", { params });
+        const { data } = await this.api().get("/sales/pricelists", { params });
 
         const rows = Array.isArray(data?.data) ? data.data : [];
         this.rows = rows.map((r) => ({
@@ -352,7 +374,9 @@ export default {
           next: Number(data.current_page || 1) < Number(data.last_page || 1),
         };
       } catch (e) {
-        this.error = e?.response?.data?.message || "Gagal memuat data pricelist";
+        const msg = e?.response?.data?.message || "Gagal memuat data pricelist";
+        this.error = msg;
+        Swal.fire({ icon: "error", title: "Load gagal", text: msg });
       } finally {
         this.loading = false;
       }
@@ -397,6 +421,7 @@ export default {
     },
 
     async save() {
+      if (this.saving) return;
       this.saving = true;
       this.error = "";
       this.fieldErrors = {};
@@ -404,32 +429,40 @@ export default {
       if (!String(this.form.name || "").trim()) {
         this.saving = false;
         this.error = "Name wajib diisi.";
+        Swal.fire({ icon: "warning", title: "Validasi", text: this.error });
         return;
       }
       if (!this.form.valid_from) {
         this.saving = false;
         this.error = "Valid From wajib diisi.";
+        Swal.fire({ icon: "warning", title: "Validasi", text: this.error });
         return;
       }
 
       try {
         const payload = this.toPayload();
         if (this.modal.mode === "create") {
-          await this.api().post("/pricelists", payload);
+          await this.api().post("/sales/pricelists", payload);
+          this.toast("success", "Pricelist created");
         } else {
-          await this.api().put(`/pricelists/${this.form.id}`, payload);
+          await this.api().put(`/sales/pricelists/${this.form.id}`, payload);
+          this.toast("success", "Pricelist updated");
         }
         this.modal.open = false;
         await this.reload();
       } catch (e) {
         if (e?.response?.status === 422) {
           this.fieldErrors = e.response.data?.errors || {};
-          this.error =
-            Object.values(this.fieldErrors)[0]?.[0] ||
+          const msg =
+            Object.values(this.fieldErrors)?.[0]?.[0] ||
             e.response.data?.message ||
             "Validasi gagal";
+          this.error = msg;
+          Swal.fire({ icon: "error", title: "Validasi gagal", text: msg });
         } else {
-          this.error = e?.response?.data?.message || "Gagal menyimpan pricelist";
+          const msg = e?.response?.data?.message || "Gagal menyimpan pricelist";
+          this.error = msg;
+          Swal.fire({ icon: "error", title: "Gagal", text: msg });
         }
       } finally {
         this.saving = false;
@@ -437,12 +470,26 @@ export default {
     },
 
     async confirmDelete(row) {
-      if (!confirm(`Hapus pricelist "${row.name}"?`)) return;
+      const res = await Swal.fire({
+        icon: "warning",
+        title: "Hapus pricelist?",
+        text: `Anda akan menghapus "${row.name}". Tindakan ini tidak dapat dibatalkan.`,
+        showCancelButton: true,
+        confirmButtonText: "Ya, hapus",
+        cancelButtonText: "Batal",
+        reverseButtons: true,
+        focusCancel: true,
+      });
+      if (!res.isConfirmed) return;
+
       try {
-        await this.api().delete(`/pricelists/${row.id}`);
+        await this.api().delete(`/sales/pricelists/${row.id}`);
+        this.toast("success", "Pricelist deleted");
         await this.reload();
       } catch (e) {
-        this.error = e?.response?.data?.message || "Gagal menghapus pricelist";
+        const msg = e?.response?.data?.message || "Gagal menghapus pricelist";
+        this.error = msg;
+        Swal.fire({ icon: "error", title: "Gagal", text: msg });
       }
     },
   },
