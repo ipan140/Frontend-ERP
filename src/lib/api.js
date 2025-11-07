@@ -1,17 +1,21 @@
+// src/lib/api.js
 import axios from "axios";
 
-/*
-|--------------------------------------------------------------------------
-| 🔧 Axios Instance
-|--------------------------------------------------------------------------
-| - Secara default pakai Bearer token (Authorization header)
-| - Jika withCredentials diaktifkan (Sanctum cookie-based), maka token
-|   diabaikan dan cookie otomatis dikirim.
-*/
+/* ============================================================================
+| 🔧 Base Axios Instance
+|==============================================================================
+| - Gunakan VITE_API_BASE dari environment, fallback ke localhost:8000
+| - Otomatis kirim Bearer token jika tersimpan di localStorage
+| - Jika butuh Sanctum (cookie-based), aktifkan withCredentials
+============================================================================ */
+const API_BASE =
+  import.meta.env.VITE_API_BASE?.trim().replace(/\/+$/, "") ||
+  "http://localhost:8000";
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE || "http://localhost:5173",
+  baseURL: API_BASE,
   timeout: 15000,
-  withCredentials: true, // ⬅️ penting kalau pakai Sanctum cookie
+  withCredentials: true,
   xsrfCookieName: "XSRF-TOKEN",
   xsrfHeaderName: "X-XSRF-TOKEN",
   headers: {
@@ -20,13 +24,9 @@ const api = axios.create({
   },
 });
 
-/*
-|--------------------------------------------------------------------------
-| 🧠 Interceptor Request
-|--------------------------------------------------------------------------
-| - Tambahkan Authorization Bearer token jika ada di localStorage.
-| - Berlaku kalau kamu masih mau support API token (misal: mobile app)
-*/
+/* ============================================================================
+| 🧠 Request Interceptor — Tambah Bearer Token
+============================================================================ */
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
@@ -36,13 +36,9 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-/*
-|--------------------------------------------------------------------------
-| ⚠️ Interceptor Response
-|--------------------------------------------------------------------------
-| - Tangani error global 401/419 (token invalid atau session expired)
-| - Hapus token dan redirect ke login page.
-*/
+/* ============================================================================
+| ⚠️ Response Interceptor — Tangani 401 / 419
+============================================================================ */
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -51,8 +47,6 @@ api.interceptors.response.use(
       if (status === 401 || status === 419) {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
-
-        // Jika bukan di halaman login, redirect
         if (window.location.pathname !== "/auth/login") {
           window.location.href = "/auth/login";
         }
@@ -62,18 +56,13 @@ api.interceptors.response.use(
   }
 );
 
-/*
-|--------------------------------------------------------------------------
-| ⚙️ Sanctum Helpers
-|--------------------------------------------------------------------------
-| Fungsi tambahan untuk login berbasis cookie (SPA).
-| Kamu bisa panggil ini dari Vue component sebelum request API.
-*/
+/* ============================================================================
+| ⚙️ Sanctum Helpers (opsional)
+|==============================================================================
+| Jika kamu memakai Laravel Sanctum cookie-based SPA, gunakan fungsi ini.
+============================================================================ */
 export async function sanctumLogin(email, password) {
-  // 1️⃣ Ambil CSRF cookie dari Laravel
   await api.get("/sanctum/csrf-cookie");
-
-  // 2️⃣ Login (gunakan route /login, bukan /api/login)
   return api.post("/login", { email, password });
 }
 
@@ -85,4 +74,40 @@ export async function sanctumProfile() {
   return api.get("/profile");
 }
 
+/* ============================================================================
+| 📦 SCM API Helper — baseURL otomatis ke /api/scm
+|==============================================================================
+| Contoh pemakaian:
+|   import { scmApi } from "@/lib/api";
+|   scmApi().get("/inventory/stocks");
+============================================================================ */
+export function scmApi() {
+  const token = localStorage.getItem("token");
+
+  const instance = axios.create({
+    baseURL: `${API_BASE}/api/scm`,
+    headers: {
+      Accept: "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+
+  instance.interceptors.response.use(
+    (res) => res,
+    (err) => {
+      if (err?.response?.status === 401) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        window.location.href = "/auth/login";
+      }
+      return Promise.reject(err);
+    }
+  );
+
+  return instance;
+}
+
+/* ============================================================================
+| 🧩 Default export untuk API umum
+============================================================================ */
 export default api;

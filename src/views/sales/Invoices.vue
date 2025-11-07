@@ -373,10 +373,11 @@ export default {
       const raw = import.meta?.env?.VITE_API_BASE || process?.env?.VUE_APP_API_BASE || "http://localhost:8000";
       return String(raw).trim().replace(/\/+$/, "");
     },
+    // ===== Axios ke /api/sales =====
     api() {
       const token = localStorage.getItem("token");
       const instance = axios.create({
-        baseURL: `${this.resolveBaseUrl()}/api`,
+        baseURL: `${this.resolveBaseUrl()}/api/sales`,
         headers: { Accept: "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       });
       instance.interceptors.response.use(
@@ -415,7 +416,7 @@ export default {
         if (this.q.status) params.status = this.q.status;
 
         const { data } = await this.api().get("/invoices", { params });
-        const rawRows = Array.isArray(data?.data) ? data.data : [];
+        const rawRows = Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : []);
         this.rows = rawRows.map(r => ({
           ...r,
           subtotal: Number(r.subtotal || 0),
@@ -441,7 +442,7 @@ export default {
 
     async openShow(row) {
       this.error = ""; this.drawer.open = true;
-      this.show = { id: row.id, number: row.number, status: row.status, customer_name: row.customer_name };
+      this.show = { id: row.id, number: row.number, status: row.status, customer_name: row.customer_name, order_id: row.order_id };
       this.items = [];
       try {
         const { data } = await this.api().get(`/invoices/${row.id}`);

@@ -397,6 +397,7 @@ export default {
   },
 
   methods: {
+    // === SweetAlert toast helper ===
     toast(icon, title) {
       const T = Swal.mixin({
         toast: true,
@@ -408,6 +409,7 @@ export default {
       T.fire({ icon, title });
     },
 
+    // === Base URL ===
     resolveBaseUrl() {
       const raw =
         import.meta?.env?.VITE_API_BASE ||
@@ -415,6 +417,8 @@ export default {
         "http://localhost:8000";
       return String(raw).trim().replace(/\/+$/, "");
     },
+
+    // === Axios instance + auto-prefix ke /sales ===
     api() {
       const token = localStorage.getItem("token");
       const API_BASE = this.resolveBaseUrl();
@@ -425,6 +429,17 @@ export default {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
       });
+
+      // ⬇️ Penting: auto-prefix endpoint tertentu ke /sales
+      instance.interceptors.request.use((cfg) => {
+        if (typeof cfg.url === "string") {
+          if (cfg.url.startsWith("/quotations")) cfg.url = "/sales" + cfg.url;
+          if (cfg.url.startsWith("/quotation-logs")) cfg.url = "/sales" + cfg.url;
+          if (cfg.url.startsWith("/quotation-items")) cfg.url = "/sales" + cfg.url;
+        }
+        return cfg;
+      });
+
       instance.interceptors.response.use(
         (res) => res,
         (err) => {
@@ -520,6 +535,7 @@ export default {
           next: Number(data.current_page || 1) < Number(data.last_page || 1),
         };
 
+        // ringkas statistik dari dataset yang tampil (page saat ini)
         this.stats.total = this.page.total;
         this.stats.draft = this.rows.filter((x) => x.status === "draft").length;
         this.stats.sent = this.rows.filter((x) => x.status === "sent").length;
@@ -661,3 +677,4 @@ export default {
   },
 };
 </script>
+

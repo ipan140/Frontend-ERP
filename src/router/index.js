@@ -49,6 +49,19 @@ import SalaryRules from "../views/HR/SalaryRules.vue";
 import Payslips from "../views/HR/Payslips.vue";
 
 /* =====================
+   SCM MODULE PAGES
+===================== */
+import SCMInventory from "../views/SCM/Inventory.vue";
+import SCMLogistics from "../views/SCM/Logistics.vue";
+import SCMMaintenance from "../views/SCM/Maintenance.vue";
+import SCMProcessing from "../views/SCM/Processing.vue";
+import SCMPurchase from "../views/SCM/Purchase.vue";
+import SCMQuality from "../views/SCM/Quality.vue";
+import SCMReplenishment from "../views/SCM/Replenishment.vue";
+import SCMReport from "../views/SCM/Report.vue";
+import SCMVendor from "../views/SCM/vendor.vue";
+
+/* =====================
    AUTH PAGES
 ===================== */
 import Login from "../views/layouts/auth/Login.vue";
@@ -242,6 +255,70 @@ const routes = [
     name: "HRPayslips",
     component: Payslips,
     meta: { title: "Payslips" + appname, requiresAuth: true },
+  },
+
+  /* =====================
+     SCM MODULE ROUTES
+  ===================== */
+  {
+    path: "/scm",
+    name: "SCMOverview",
+    component: Tables,
+    meta: { title: "SCM Overview" + appname, requiresAuth: true },
+  },
+  {
+    path: "/scm/inventory",
+    name: "SCMInventory",
+    component: SCMInventory,
+    meta: { title: "Inventory" + appname, requiresAuth: true },
+  },
+  {
+    path: "/scm/logistics",
+    name: "SCMLogistics",
+    component: SCMLogistics,
+    meta: { title: "Logistics" + appname, requiresAuth: true },
+  },
+  {
+    path: "/scm/maintenance",
+    name: "SCMMaintenance",
+    component: SCMMaintenance,
+    meta: { title: "Maintenance" + appname, requiresAuth: true },
+  },
+  {
+    path: "/scm/processing",
+    name: "SCMProcessing",
+    component: SCMProcessing,
+    meta: { title: "Processing" + appname, requiresAuth: true },
+  },
+  {
+    path: "/scm/purchase",
+    name: "SCMPurchase",
+    component: SCMPurchase,
+    meta: { title: "Purchase" + appname, requiresAuth: true },
+  },
+  {
+    path: "/scm/quality",
+    name: "SCMQuality",
+    component: SCMQuality,
+    meta: { title: "Quality" + appname, requiresAuth: true },
+  },
+  {
+    path: "/scm/replenishment",
+    name: "SCMReplenishment",
+    component: SCMReplenishment,
+    meta: { title: "Replenishment" + appname, requiresAuth: true },
+  },
+  {
+    path: "/scm/report",
+    name: "SCMReport",
+    component: SCMReport,
+    meta: { title: "Report" + appname, requiresAuth: true },
+  },
+  {
+    path: "/scm/vendor",
+    name: "SCMVendor",
+    component: SCMVendor,
+    meta: { title: "Vendor" + appname, requiresAuth: true },
   },
 
   /* =====================
