@@ -62,6 +62,14 @@ import SCMReport from "../views/SCM/Report.vue";
 import SCMVendor from "../views/SCM/vendor.vue";
 
 /* =====================
+   ACCOUNTING MODULE PAGES (singular files)
+===================== */
+import AccAccount from "../views/Accounting/Account.vue";
+import AccJournal from "../views/Accounting/Journal.vue";
+import AccMove from "../views/Accounting/Move.vue";
+import AccReport from "../views/Accounting/Report.vue";
+
+/* =====================
    AUTH PAGES
 ===================== */
 import Login from "../views/layouts/auth/Login.vue";
@@ -94,6 +102,40 @@ const routes = [
     name: "Dashboard",
     component: Dashboard,
     meta: { title: "Dashboard" + appname, requiresAuth: true },
+  },
+
+  /* =====================
+     ACCOUNTING MODULE ROUTES
+  ===================== */
+  {
+    path: "/accounting",
+    name: "AccountingOverview",
+    component: Tables,
+    meta: { title: "Accounting Overview" + appname, requiresAuth: true },
+  },
+  {
+    path: "/accounting/accounts",
+    name: "AccountingAccounts",
+    component: AccAccount,
+    meta: { title: "Accounts (COA)" + appname, requiresAuth: true },
+  },
+  {
+    path: "/accounting/journals",
+    name: "AccountingJournals",
+    component: AccJournal,
+    meta: { title: "Journals" + appname, requiresAuth: true },
+  },
+  {
+    path: "/accounting/moves",
+    name: "AccountingMoves",
+    component: AccMove,
+    meta: { title: "Journal Entries" + appname, requiresAuth: true },
+  },
+  {
+    path: "/accounting/reports",
+    name: "AccountingReports",
+    component: AccReport,
+    meta: { title: "Reports" + appname, requiresAuth: true },
   },
 
   /* =====================
