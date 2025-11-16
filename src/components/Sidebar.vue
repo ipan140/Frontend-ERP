@@ -1,6 +1,6 @@
 <template>
   <!-- sidebar -->
-  <nav class="sidebar bg-white dark:bg-gray-8 00">
+  <nav class="sidebar bg-white dark:bg-gray-800">
     <!-- sidebar head -->
     <div class="sidebar-head p-4">
       <router-link to="/dashboard" class="flex">
