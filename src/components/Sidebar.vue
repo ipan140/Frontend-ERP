@@ -45,7 +45,7 @@
             </router-link>
           </div>
 
-          <!-- ====== Sales (no overview) ====== -->
+          <!-- ====== Sales ====== -->
           <div class="item mt-3">
             <menu-accordion>
               <template #icon><Icon icon="mdi:cart-outline" /></template>
@@ -61,54 +61,42 @@
                   class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700"
                   :class="startsWith('/sales/products') ? 'bg-gray-200 dark:bg-gray-700' : ''"
                   @click="closeOnMobile"
-                >
-                  Products
-                </router-link>
+                >Products</router-link>
 
                 <router-link
                   to="/sales/quotations"
                   class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700"
                   :class="startsWith('/sales/quotations') ? 'bg-gray-200 dark:bg-gray-700' : ''"
                   @click="closeOnMobile"
-                >
-                  Quotations
-                </router-link>
+                >Quotations</router-link>
 
                 <router-link
                   to="/sales/invoices"
                   class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700"
                   :class="startsWith('/sales/invoices') ? 'bg-gray-200 dark:bg-gray-700' : ''"
                   @click="closeOnMobile"
-                >
-                  Invoices
-                </router-link>
+                >Invoices</router-link>
 
                 <router-link
                   to="/sales/orders"
                   class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700"
                   :class="startsWith('/sales/orders') ? 'bg-gray-200 dark:bg-gray-700' : ''"
                   @click="closeOnMobile"
-                >
-                  Sales Orders
-                </router-link>
+                >Sales Orders</router-link>
 
                 <router-link
                   to="/sales/customers"
                   class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700"
                   :class="startsWith('/sales/customers') ? 'bg-gray-200 dark:bg-gray-700' : ''"
                   @click="closeOnMobile"
-                >
-                  Customers
-                </router-link>
+                >Customers</router-link>
 
                 <router-link
                   to="/sales/pricelists"
                   class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700"
                   :class="startsWith('/sales/pricelists') ? 'bg-gray-200 dark:bg-gray-700' : ''"
                   @click="closeOnMobile"
-                >
-                  Pricelists
-                </router-link>
+                >Pricelists</router-link>
               </template>
             </menu-accordion>
           </div>
@@ -132,19 +120,47 @@
             </menu-accordion>
           </div>
 
-          <!-- Accounting -->
+          <!-- ====== Accounting (UPDATED) ====== -->
           <div class="item mt-3">
             <menu-accordion>
               <template #icon><Icon icon="mdi:account-cash-outline" /></template>
               <template #title>
                 <div class="w-full flex items-center justify-between">
-                  <span>Accounting</span>
+                  <span :class="startsWith('/accounting') ? 'text-primary font-semibold' : ''">Accounting</span>
                 </div>
               </template>
               <template #content>
-                <router-link to="/accounting/invoicing"      class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click="closeOnMobile">Invoicing</router-link>
-                <router-link to="/accounting/general-ledger" class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hoverbg-gray-700" @click="closeOnMobile">General Ledger</router-link>
-                <router-link to="/accounting/bank-reconcile" class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700" @click="closeOnMobile">Bank Reconcile</router-link>
+                <!-- Masters -->
+                <router-link
+                  to="/accounting/accounts"
+                  class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700"
+                  :class="startsWith('/accounting/accounts') ? 'bg-gray-200 dark:bg-gray-700' : ''"
+                  @click="closeOnMobile"
+                >Chart of Accounts</router-link>
+
+                <router-link
+                  to="/accounting/journals"
+                  class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700"
+                  :class="startsWith('/accounting/journals') ? 'bg-gray-200 dark:bg-gray-700' : ''"
+                  @click="closeOnMobile"
+                >Journals</router-link>
+
+                <router-link
+                  to="/accounting/moves"
+                  class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700"
+                  :class="startsWith('/accounting/moves') ? 'bg-gray-200 dark:bg-gray-700' : ''"
+                  @click="closeOnMobile"
+                >Journal Entries</router-link>
+
+                <hr class="my-3 border-gray-200 dark:border-gray-700" />
+
+                <!-- Reports (single entry only) -->
+                <router-link
+                  to="/accounting/reports"
+                  class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700"
+                  :class="startsWith('/accounting/reports') ? 'bg-gray-200 dark:bg-gray-700' : ''"
+                  @click="closeOnMobile"
+                >Reports</router-link>
               </template>
             </menu-accordion>
           </div>
@@ -178,7 +194,7 @@
                   class="w-full block rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700"
                   :class="startsWith('/scm/logistics') ? 'bg-gray-200 dark:bg-gray-700' : ''"
                   @click="closeOnMobile"
-                >logistics</router-link>
+                >Logistics</router-link>
 
                 <router-link
                   to="/scm/processing"
@@ -345,8 +361,6 @@
               </template>
             </menu-accordion>
           </div>
-
-          <!-- Pages (dipindah ke section hidden di bawah) -->
         </div>
       </div>
 
@@ -394,7 +408,7 @@
           </menu-accordion>
         </div>
 
-        <!-- Pages (ikut hidden) -->
+        <!-- Pages -->
         <div class="item mt-3">
           <menu-accordion>
             <template #icon><Icon icon="ri:pages-fill" /></template>
@@ -438,10 +452,7 @@ export default {
   name: "Sidebar",
   components: { Icon, MenuAccordion },
   data() {
-    return {
-      // false = disembunyikan; ubah ke true jika ingin tampil lagi
-      showUiFormTables: false,
-    };
+    return { showUiFormTables: false };
   },
   methods: {
     startsWith(prefix) { return this.$route.path.startsWith(prefix); },
