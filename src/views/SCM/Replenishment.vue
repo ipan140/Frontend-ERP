@@ -150,24 +150,34 @@
         </h3>
 
         <div class="grid md:grid-cols-2 gap-3">
+          <!-- ITEM SELECT -->
           <div>
-            <label class="block text-sm mb-1 dark:text-gray-300">Item ID</label>
-            <input
+            <label class="block text-sm mb-1 dark:text-gray-300">Item</label>
+            <select
               v-model.number="form.item_id"
-              type="number"
-              min="1"
               class="w-full border rounded px-3 py-2 dark:bg-gray-800 dark:border-gray-700"
-            />
+            >
+              <option disabled value="">-- Select Item --</option>
+              <option v-for="i in items" :key="i.id" :value="i.id">
+                {{ i.name }}
+              </option>
+            </select>
           </div>
+
+          <!-- WAREHOUSE SELECT -->
           <div>
-            <label class="block text-sm mb-1 dark:text-gray-300">Warehouse ID</label>
-            <input
+            <label class="block text-sm mb-1 dark:text-gray-300">Warehouse</label>
+            <select
               v-model.number="form.warehouse_id"
-              type="number"
-              min="1"
               class="w-full border rounded px-3 py-2 dark:bg-gray-800 dark:border-gray-700"
-            />
+            >
+              <option disabled value="">-- Select Warehouse --</option>
+              <option v-for="w in warehouses" :key="w.id" :value="w.id">
+                {{ w.name }}
+              </option>
+            </select>
           </div>
+
           <div>
             <label class="block text-sm mb-1 dark:text-gray-300">Min Qty</label>
             <input
@@ -178,6 +188,7 @@
               class="w-full border rounded px-3 py-2 dark:bg-gray-800 dark:border-gray-700"
             />
           </div>
+
           <div>
             <label class="block text-sm mb-1 dark:text-gray-300">Max Qty</label>
             <input
@@ -188,6 +199,7 @@
               class="w-full border rounded px-3 py-2 dark:bg-gray-800 dark:border-gray-700"
             />
           </div>
+
           <div>
             <label class="block text-sm mb-1 dark:text-gray-300">Reorder Qty</label>
             <input
@@ -198,6 +210,7 @@
               class="w-full border rounded px-3 py-2 dark:bg-gray-800 dark:border-gray-700"
             />
           </div>
+
           <div>
             <label class="block text-sm mb-1 dark:text-gray-300">Active</label>
             <select
@@ -228,10 +241,7 @@
     </div>
 
     <!-- Loading bar -->
-    <div
-      v-if="loading"
-      class="fixed left-0 right-0 top-0 h-1 bg-primary animate-pulse"
-    ></div>
+    <div v-if="loading" class="fixed left-0 right-0 top-0 h-1 bg-primary animate-pulse"></div>
   </div>
 </template>
 
@@ -242,6 +252,7 @@ import { scmApi } from "@/lib/_scmApi";
 
 export default {
   name: "Replenishments",
+
   data() {
     return {
       loading: false,
@@ -255,11 +266,13 @@ export default {
 
       q: { search: "" },
       rows: [],
-      error: "",
 
+      items: [],
+      warehouses: [],
       checkResult: [],
 
       modal: { open: false, mode: "create", id: null },
+
       form: {
         item_id: null,
         warehouse_id: null,
@@ -268,34 +281,89 @@ export default {
         reorder_qty: 0,
         active: 1,
       },
+
+      error: "",
     };
   },
+
   mounted() {
     this.reload();
   },
+
   methods: {
     api() {
       return scmApi();
     },
+
     toast(icon, title) {
       const T = Swal.mixin({
         toast: true,
         position: "top-end",
         showConfirmButton: false,
-        timer: 1600,
+        timer: 1500,
         timerProgressBar: true,
       });
       T.fire({ icon, title });
     },
+
     alert(icon, title, text) {
       return Swal.fire({ icon, title, text });
     },
 
+    /* ============================================================
+     * LOAD ITEMS
+     * ============================================================ */
+    async loadItems() {
+      try {
+        const { data } = await this.api().get("/replenishments/items");
+
+        this.items = Array.isArray(data.items)
+          ? data.items
+          : Array.isArray(data.data)
+          ? data.data
+          : [];
+
+      } catch (e) {
+        this.alert("error", "Gagal load items", e?.response?.data?.message || e.message);
+      }
+    },
+
+    /* ============================================================
+     * LOAD WAREHOUSES
+     * ============================================================ */
+    async loadWarehouses() {
+      try {
+        const { data } = await this.api().get("/replenishments/warehouses");
+
+        this.warehouses = Array.isArray(data.warehouses)
+          ? data.warehouses
+          : Array.isArray(data.data)
+          ? data.data
+          : [];
+
+      } catch (e) {
+        this.alert(
+          "error",
+          "Gagal load warehouses",
+          e?.response?.data?.message || e.message
+        );
+      }
+    },
+
+    /* ============================================================
+     * LOAD REPLENISHMENTS LIST (RULES)
+     * ============================================================ */
     async reload() {
       this.loading = true;
       try {
         const { data } = await this.api().get("/replenishments");
-        this.rows = data?.data || data?.replenishments || [];
+
+        this.rows = Array.isArray(data.replenishments)
+          ? data.replenishments
+          : Array.isArray(data.data)
+          ? data.data
+          : [];
+
       } catch (e) {
         this.alert("error", "Load gagal", e?.response?.data?.message || e.message);
       } finally {
@@ -303,8 +371,12 @@ export default {
       }
     },
 
+    /* ============================================================
+     * OPEN CREATE MODAL
+     * ============================================================ */
     openCreate() {
       this.modal = { open: true, mode: "create", id: null };
+
       this.form = {
         item_id: null,
         warehouse_id: null,
@@ -313,19 +385,31 @@ export default {
         reorder_qty: 0,
         active: 1,
       };
+
+      this.loadItems();
+      this.loadWarehouses();
     },
 
+    /* ============================================================
+     * OPEN EDIT MODAL
+     * ============================================================ */
     async openEdit(row) {
       this.modal = { open: true, mode: "edit", id: row.id };
+
+      this.loadItems();
+      this.loadWarehouses();
+
       try {
         const { data } = await this.api().get(`/replenishments/${row.id}`);
-        const v = data?.replenishment || row;
+
+        const v = data?.replenishment || data?.data || row;
+
         this.form = {
           item_id: v.item_id,
           warehouse_id: v.warehouse_id,
-          min_qty: v.min_qty,
-          max_qty: v.max_qty,
-          reorder_qty: v.reorder_qty,
+          min_qty: Number(v.min_qty),
+          max_qty: Number(v.max_qty),
+          reorder_qty: Number(v.reorder_qty),
           active: Number(v.active),
         };
       } catch (e) {
@@ -337,8 +421,12 @@ export default {
       this.modal.open = false;
     },
 
+    /* ============================================================
+     * SUBMIT CREATE / UPDATE
+     * ============================================================ */
     async submit() {
       this.saving = true;
+
       try {
         if (this.modal.mode === "create") {
           await this.api().post("/replenishments", this.form);
@@ -347,8 +435,10 @@ export default {
           await this.api().put(`/replenishments/${this.modal.id}`, this.form);
           this.toast("success", "Rule updated");
         }
+
         this.closeModal();
         this.reload();
+
       } catch (e) {
         this.alert("error", "Save gagal", e?.response?.data?.message || e.message);
       } finally {
@@ -356,14 +446,18 @@ export default {
       }
     },
 
+    /* ============================================================
+     * DELETE RULE
+     * ============================================================ */
     async destroyRow(row) {
       const s = await Swal.fire({
         icon: "warning",
         title: "Delete rule?",
-        text: `#${row.id} item ${row.item_id} @warehouse ${row.warehouse_id}`,
+        text: `#${row.id} item ${row.item_id} @ warehouse ${row.warehouse_id}`,
         showCancelButton: true,
         confirmButtonText: "Delete",
       });
+
       if (!s.isConfirmed) return;
 
       try {
@@ -375,6 +469,9 @@ export default {
       }
     },
 
+    /* ============================================================
+     * CHECK REPLENISHMENT
+     * ============================================================ */
     async runCheck() {
       try {
         const { data } = await this.api().post("/replenishments/check");

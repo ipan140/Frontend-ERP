@@ -49,21 +49,31 @@
           <table class="min-w-full text-sm text-left text-gray-600 dark:text-gray-300">
             <thead class="text-xs uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
               <tr>
+                <th class="px-6 py-3">#</th>
                 <th class="px-6 py-3">Code</th>
                 <th class="px-6 py-3">Name</th>
                 <th class="px-6 py-3">Serial</th>
                 <th class="px-6 py-3">Category</th>
+                <th class="px-6 py-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="e in equipments" :key="e.id" class="bg-white dark:bg-gray-800 border-b dark:border-gray-700">
-                <td class="px-6 py-3 font-mono">{{ e.code }}</td>
-                <td class="px-6 py-3">{{ e.name }}</td>
-                <td class="px-6 py-3">{{ e.serial || '-' }}</td>
-                <td class="px-6 py-3">{{ e.category || '-' }}</td>
+              <tr v-for="(e, idx) in equipments" :key="e.id ?? idx" class="bg-white dark:bg-gray-800 border-b dark:border-gray-700">
+                <td class="px-6 py-3 font-mono">{{ idx + 1 }}</td>
+                <td class="px-6 py-3 font-mono">{{ e.code ?? e.asset_id ?? e.id ?? '-' }}</td>
+                <td class="px-6 py-3">{{ e.name ?? e.asset_name ?? '-' }}</td>
+                <td class="px-6 py-3">{{ e.serial ?? '-' }}</td>
+                <td class="px-6 py-3">{{ e.category ?? '-' }}</td>
+                <td class="px-6 py-3 text-right">
+                  <div class="flex justify-end gap-2">
+                    <button @click="viewEquipment(e)" class="px-2 py-1 text-xs rounded bg-blue-100 text-blue-700">View</button>
+                    <button @click="editEquipment(e)" class="px-2 py-1 text-xs rounded bg-amber-100 text-amber-700">Edit</button>
+                    <button @click="deleteEquipment(e)" class="px-2 py-1 text-xs rounded bg-red-100 text-red-700">Delete</button>
+                  </div>
+                </td>
               </tr>
               <tr v-if="!loading.equip && !equipments.length">
-                <td colspan="4" class="px-6 py-6 text-center text-gray-400">No equipment</td>
+                <td colspan="6" class="px-6 py-6 text-center text-gray-400">No equipment</td>
               </tr>
             </tbody>
           </table>
@@ -90,12 +100,12 @@
             </thead>
             <tbody>
               <tr v-for="r in requests" :key="r.id" class="bg-white dark:bg-gray-800 border-b dark:border-gray-700">
-                <td class="px-6 py-3 font-mono">#{{ r.id }}</td>
+                <td class="px-6 py-3 font-mono">#{{ r.id ?? '-' }}</td>
                 <td class="px-6 py-3">
-                  <div class="font-medium">{{ r.equipment?.name || '-' }}</div>
-                  <div class="text-xs text-gray-500">{{ r.equipment?.code }}</div>
+                  <div class="font-medium">{{ getRequestEquipmentName(r) }}</div>
+                  <div class="text-xs text-gray-500">{{ getRequestEquipmentCode(r) }}</div>
                 </td>
-                <td class="px-6 py-3 capitalize">{{ r.type }}</td>
+                <td class="px-6 py-3 capitalize">{{ r.type ?? '-' }}</td>
                 <td class="px-6 py-3 capitalize">
                   <span v-if="r.priority==='high'" class="px-2 py-1 text-xs rounded bg-red-100 text-red-700">High</span>
                   <span v-else-if="r.priority==='low'" class="px-2 py-1 text-xs rounded bg-gray-100 text-gray-700">Low</span>
@@ -103,17 +113,23 @@
                 </td>
                 <td class="px-6 py-3 capitalize">
                   <span v-if="r.status==='done'" class="px-2 py-1 text-xs rounded bg-green-100 text-green-700">Done</span>
-                  <span v-else class="px-2 py-1 text-xs rounded bg-amber-100 text-amber-700">{{ r.status }}</span>
+                  <span v-else class="px-2 py-1 text-xs rounded bg-amber-100 text-amber-700">{{ r.status ?? '-' }}</span>
                 </td>
                 <td class="px-6 py-3 text-right">
-                  <button
-                    v-if="r.status!=='done'"
-                    :disabled="busyId===r.id"
-                    @click="completeRequest(r)"
-                    class="px-2 py-1 rounded border dark:border-gray-600"
-                  >
-                    {{ busyId===r.id ? 'Completing…' : 'Complete' }}
-                  </button>
+                  <div class="flex justify-end gap-2">
+                    <button @click="viewRequest(r)" class="px-2 py-1 text-xs rounded bg-blue-100 text-blue-700">View</button>
+                    <button @click="editRequest(r)" class="px-2 py-1 text-xs rounded bg-amber-100 text-amber-700">Edit</button>
+                    <button @click="deleteRequest(r)" class="px-2 py-1 text-xs rounded bg-red-100 text-red-700">Delete</button>
+
+                    <button
+                      v-if="r.status!=='done'"
+                      :disabled="busyId===r.id"
+                      @click="completeRequest(r)"
+                      class="px-2 py-1 rounded border dark:border-gray-600"
+                    >
+                      {{ busyId===r.id ? 'Completing…' : 'Complete' }}
+                    </button>
+                  </div>
                 </td>
               </tr>
               <tr v-if="!loading.req && !requests.length">
@@ -134,21 +150,51 @@
           <div v-if="!loading.plan && !plans.length" class="text-sm text-gray-400">No plans</div>
           <ul v-else class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
             <li v-for="p in plans" :key="p.id" class="border dark:border-gray-700 rounded p-3">
-              <div class="font-medium dark:text-gray-100">{{ p.name || ('Plan #'+p.id) }}</div>
-              <div class="text-xs text-gray-500">{{ p.equipment?.name || '-' }}</div>
-              <div class="text-xs mt-1">Interval: {{ p.interval || '-' }}</div>
-              <div class="text-xs">Next: {{ p.next_due || '-' }}</div>
+              <div class="font-medium dark:text-gray-100">{{ p.name ?? ('Plan #'+(p.id ?? '?')) }}</div>
+              <div class="text-xs text-gray-500">{{ getPlanEquipmentName(p) }}</div>
+              <div class="text-xs mt-1">Interval: {{ p.frequency ?? p.interval ?? '-' }}</div>
+              <div class="text-xs">Next: {{ p.next_date ?? p.next_due ?? '-' }}</div>
+              <div class="text-xs text-gray-500 mt-1">{{ p.procedure ?? '' }}</div>
             </li>
           </ul>
         </div>
       </div>
     </div>
 
-    <!-- Modal: New Equipment -->
-    <div v-if="modal.open && modal.mode==='equip'" class="fixed inset-0 z-50 flex items-center justify-center">
-      <div class="absolute inset-0 bg-black/40" @click="modal.open=false"></div>
+    <!-- ===== MODALS ===== -->
+
+    <!-- VIEW modal (used for both equipment & request) -->
+    <div v-if="modal.open && (modal.mode==='equip_view' || modal.mode==='req_view')" class="fixed inset-0 z-50 flex items-center justify-center">
+      <div class="absolute inset-0 bg-black/40" @click="closeModal"></div>
       <div class="relative bg-white dark:bg-gray-800 rounded-md border dark:border-gray-700 w-full max-w-lg p-5">
-        <h3 class="text-lg font-semibold mb-4 dark:text-gray-200">Add Equipment</h3>
+        <h3 class="text-lg font-semibold mb-4 dark:text-gray-200">{{ modal.mode==='equip_view' ? 'Equipment Details' : 'Request Details' }}</h3>
+
+        <div v-if="modal.mode==='equip_view'">
+          <div class="text-sm">Name: <span class="font-medium">{{ viewData.name }}</span></div>
+          <div class="text-sm">Code: <span class="font-medium">{{ viewData.code }}</span></div>
+          <div class="text-sm">Serial: <span class="font-medium">{{ viewData.serial }}</span></div>
+          <div class="text-sm">Category: <span class="font-medium">{{ viewData.category }}</span></div>
+        </div>
+
+        <div v-else>
+          <div class="text-sm">ID: <span class="font-medium">#{{ viewData.id }}</span></div>
+          <div class="text-sm">Equipment: <span class="font-medium">{{ getRequestEquipmentName(viewData) }}</span></div>
+          <div class="text-sm">Type: <span class="font-medium">{{ viewData.type }}</span></div>
+          <div class="text-sm">Priority: <span class="font-medium">{{ viewData.priority }}</span></div>
+          <div class="text-sm">Note: <div class="mt-2 p-2 bg-gray-50 rounded text-sm">{{ viewData.note }}</div></div>
+        </div>
+
+        <div class="mt-5 text-right">
+          <button class="px-3 py-2 rounded border" @click="closeModal">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CREATE / EDIT Equipment modal -->
+    <div v-if="modal.open && (modal.mode==='equip' || modal.mode==='equip_edit')" class="fixed inset-0 z-50 flex items-center justify-center">
+      <div class="absolute inset-0 bg-black/40" @click="closeModal"></div>
+      <div class="relative bg-white dark:bg-gray-800 rounded-md border dark:border-gray-700 w-full max-w-lg p-5">
+        <h3 class="text-lg font-semibold mb-4 dark:text-gray-200">{{ modal.mode==='equip' ? 'Add Equipment' : 'Edit Equipment' }}</h3>
 
         <div class="grid gap-3">
           <div>
@@ -176,28 +222,29 @@
         <p v-if="error" class="text-sm text-red-500 mt-3">{{ error }}</p>
 
         <div class="mt-5 flex justify-end gap-2">
-          <button @click="modal.open=false" class="px-4 py-2 rounded border dark:border-gray-600">Cancel</button>
-          <button @click="saveEquipment" :disabled="saving" class="px-4 py-2 rounded bg-primary text-white hover:bg-primary/80">
+          <button @click="closeModal" class="px-4 py-2 rounded border dark:border-gray-600">Cancel</button>
+          <button v-if="modal.mode==='equip'" @click="saveEquipment" :disabled="saving" class="px-4 py-2 rounded bg-primary text-white hover:bg-primary/80">
             {{ saving ? 'Saving…' : 'Save' }}
+          </button>
+          <button v-else @click="updateEquipment()" :disabled="saving" class="px-4 py-2 rounded bg-primary text-white hover:bg-primary/80">
+            {{ saving ? 'Updating…' : 'Update' }}
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Modal: New Request -->
-    <div v-if="modal.open && modal.mode==='req'" class="fixed inset-0 z-50 flex items-center justify-center">
-      <div class="absolute inset-0 bg-black/40" @click="modal.open=false"></div>
+    <!-- CREATE / EDIT Request modal -->
+    <div v-if="modal.open && (modal.mode==='req' || modal.mode==='req_edit')" class="fixed inset-0 z-50 flex items-center justify-center">
+      <div class="absolute inset-0 bg-black/40" @click="closeModal"></div>
       <div class="relative bg-white dark:bg-gray-800 rounded-md border dark:border-gray-700 w-full max-w-lg p-5">
-        <h3 class="text-lg font-semibold mb-4 dark:text-gray-200">New Maintenance Request</h3>
+        <h3 class="text-lg font-semibold mb-4 dark:text-gray-200">{{ modal.mode==='req' ? 'New Maintenance Request' : 'Edit Maintenance Request' }}</h3>
 
         <div class="grid gap-3">
           <div>
             <label class="block text-sm mb-1 dark:text-gray-300">Equipment <span class="text-red-500">*</span></label>
             <select v-model.number="reqForm.equipment_id" class="w-full border dark:border-gray-700 rounded px-3 py-2 dark:bg-gray-800 dark:text-gray-200">
               <option value="">-- Select equipment --</option>
-              <option v-for="e in equipments" :key="e.id" :value="e.id">
-                {{ e.name }} ({{ e.code }})
-              </option>
+              <option v-for="e in equipments" :key="e.id" :value="e.id">{{ e.name ?? e.asset_name ?? ('#'+(e.id ?? '')) }}</option>
             </select>
             <p v-if="fieldErrors.equipment_id" class="text-xs text-red-500 mt-1">{{ fieldErrors.equipment_id[0] }}</p>
           </div>
@@ -231,9 +278,12 @@
         <p v-if="error" class="text-sm text-red-500 mt-3">{{ error }}</p>
 
         <div class="mt-5 flex justify-end gap-2">
-          <button @click="modal.open=false" class="px-4 py-2 rounded border dark:border-gray-600">Cancel</button>
-          <button @click="saveRequest" :disabled="saving" class="px-4 py-2 rounded bg-primary text-white hover:bg-primary/80">
+          <button @click="closeModal" class="px-4 py-2 rounded border dark:border-gray-600">Cancel</button>
+          <button v-if="modal.mode==='req'" @click="saveRequest" :disabled="saving" class="px-4 py-2 rounded bg-primary text-white hover:bg-primary/80">
             {{ saving ? 'Saving…' : 'Save' }}
+          </button>
+          <button v-else @click="updateRequest()" :disabled="saving" class="px-4 py-2 rounded bg-primary text-white hover:bg-primary/80">
+            {{ saving ? 'Updating…' : 'Update' }}
           </button>
         </div>
       </div>
@@ -268,19 +318,12 @@ export default {
       error: "",
       fieldErrors: {},
 
-      equipForm: {
-        name: "",
-        code: "",
-        serial: "",
-        category: "",
-      },
+      // forms & helpers
+      equipForm: { id: null, name: "", code: "", serial: "", category: "" },
+      reqForm: { id: null, equipment_id: "", type: "", note: "", priority: "normal" },
 
-      reqForm: {
-        equipment_id: "",
-        type: "",
-        note: "",
-        priority: "normal",
-      },
+      // view content
+      viewData: {},
     };
   },
 
@@ -295,187 +338,410 @@ export default {
   },
 
   methods: {
-    // Toast & Alert
-    toast(icon, title) {
-      const T = Swal.mixin({ toast: true, position: "top-end", showConfirmButton: false, timer: 1600, timerProgressBar: true });
-      T.fire({ icon, title });
+    // ==============================
+    // SMALL HELPERS
+    // ==============================
+    alert(icon, title, text = "") {
+      return Swal.fire({ icon, title, text });
     },
-    alert(icon, title, text) { return Swal.fire({ icon, title, text }); },
 
-    // Axios base
+    toast(icon, title) {
+      Swal.mixin({
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 1400,
+        timerProgressBar: true,
+      }).fire({ icon, title });
+    },
+
     resolveBaseUrl() {
       const raw =
         import.meta?.env?.VITE_API_BASE ||
         process?.env?.VUE_APP_API_BASE ||
         "http://localhost:8000";
+
       return String(raw).trim().replace(/\/+$/, "");
     },
+
     api() {
-      const token = localStorage.getItem("token");
       const API_BASE = this.resolveBaseUrl();
-      const instance = axios.create({
+      const token = localStorage.getItem("token");
+
+      return axios.create({
         baseURL: `${API_BASE}/api/scm/maintenance`,
         headers: {
           Accept: "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
       });
-      instance.interceptors.response.use(
-        (res) => res,
-        (err) => {
-          if (err?.response?.status === 401) {
-            localStorage.removeItem("token");
-            localStorage.removeItem("user");
-            window.location.href = "/auth/login";
-          }
-          return Promise.reject(err);
-        }
-      );
-      return instance;
     },
 
-    // Loaders
+    // ==============================
+    // Extractor lebih kuat
+    // ==============================
+    extractArray(payload, key = null) {
+      if (!payload) return [];
+
+      if (key && payload[key]) {
+        const v = payload[key];
+        if (Array.isArray(v)) return v;
+        if (Array.isArray(v?.data)) return v.data;
+      }
+
+      if (Array.isArray(payload)) return payload;
+      if (Array.isArray(payload?.data)) return payload.data;
+      if (Array.isArray(payload?.data?.data)) return payload.data.data;
+      if (Array.isArray(payload?.items)) return payload.items;
+      if (Array.isArray(payload?.results)) return payload.results;
+
+      return [];
+    },
+
+    // ==============================
+    // LOADERS
+    // ==============================
     async loadEquipments() {
-      this.loading.equip = true; this.error = "";
+      this.loading.equip = true;
       try {
-        const { data } = await this.api().get("/equipments");
-        this.equipments = Array.isArray(data?.data) ? data.data : (Array.isArray(data?.equipments) ? data.equipments : (data?.equipment ? [data.equipment] : []));
+        const res = await this.api().get("/equipments");
+        const payload = res.data || {};
+        let arr = this.extractArray(payload, "equipments");
+
+        if (!arr.length) arr = this.extractArray(payload);
+
+        // mapping supaya code tidak hilang
+        this.equipments = arr.map((e) => ({
+          id: e.id,
+          name: e.name ?? e.equipment_name ?? e.asset?.name ?? "-",
+          code: e.code ?? e.equipment_code ?? e.asset_code ?? e.asset?.code ?? "",
+          serial: e.serial ?? e.serial_number ?? "",
+          category: e.category ?? e.type ?? "",
+        }));
       } catch (e) {
-        const msg = e?.response?.data?.message || "Gagal memuat equipments";
-        this.error = msg; this.alert("error", "Load gagal", msg);
+        this.alert("error", "Load gagal", e?.response?.data?.message || "Gagal memuat equipments");
       } finally {
         this.loading.equip = false;
       }
     },
 
     async loadRequests() {
-      this.loading.req = true; this.error = "";
+      this.loading.req = true;
       try {
-        const { data } = await this.api().get("/requests");
-        // Controller kamu pakai paginate: { ok, requests: { data: [...] } } atau { ok, requests:[...] }
-        const raw = data?.requests ?? data;
-        const list = Array.isArray(raw) ? raw : (Array.isArray(raw?.data) ? raw.data : []);
-        this.requests = list;
+        const res = await this.api().get("/requests");
+        const payload = res.data || {};
+        let arr = this.extractArray(payload, "requests");
+        if (!arr.length) arr = this.extractArray(payload);
+
+        this.requests = arr;
       } catch (e) {
-        const msg = e?.response?.data?.message || "Gagal memuat requests";
-        this.error = msg; this.alert("error", "Load gagal", msg);
+        this.alert("error", "Load gagal", e?.response?.data?.message || "Gagal memuat requests");
       } finally {
         this.loading.req = false;
       }
     },
 
     async loadPlans() {
-      this.loading.plan = true; this.error = "";
+      this.loading.plan = true;
       try {
-        const { data } = await this.api().get("/plans");
-        this.plans = Array.isArray(data?.plans) ? data.plans : [];
+        const res = await this.api().get("/plans");
+        const payload = res.data || {};
+        let arr = this.extractArray(payload, "plans");
+
+        if (!arr.length) arr = this.extractArray(payload);
+
+        this.plans = arr;
       } catch (e) {
-        const msg = e?.response?.data?.message || "Gagal memuat plans";
-        this.error = msg; this.alert("error", "Load gagal", msg);
+        this.alert("error", "Load gagal", e?.response?.data?.message || "Gagal memuat plans");
       } finally {
         this.loading.plan = false;
       }
     },
 
-    async reloadAll() {
-      await Promise.all([this.loadEquipments(), this.loadRequests(), this.loadPlans()]);
+    reloadAll() {
+      return Promise.all([
+        this.loadEquipments(),
+        this.loadRequests(),
+        this.loadPlans(),
+      ]);
     },
 
-    // Modal openers
+    // ==============================
+    // EQUIPMENTS CRUD
+    // ==============================
     openNewEquipment() {
       this.modal = { open: true, mode: "equip" };
-      this.error = ""; this.fieldErrors = {};
-      this.equipForm = { name: "", code: "", serial: "", category: "" };
-    },
-    openNewRequest() {
-      this.modal = { open: true, mode: "req" };
-      this.error = ""; this.fieldErrors = {};
-      this.reqForm = { equipment_id: "", type: "", note: "", priority: "normal" };
-      if (!this.equipments.length) this.loadEquipments();
+      this.error = "";
+      this.fieldErrors = {};
+      this.equipForm = { id: null, name: "", code: "", serial: "", category: "" };
     },
 
-    // Actions
     async saveEquipment() {
       if (this.saving) return;
-      this.saving = true; this.error = ""; this.fieldErrors = {};
+      this.saving = true;
+      this.fieldErrors = {};
+
       try {
         const payload = {
-          name: String(this.equipForm.name || "").trim(),
-          code: String(this.equipForm.code || "").trim(),
-          serial: String(this.equipForm.serial || "").trim() || null,
-          category: String(this.equipForm.category || "").trim() || null,
+          name: this.equipForm.name.trim(),
+          code: this.equipForm.code.trim(),
+          serial: this.equipForm.serial?.trim() || null,
+          category: this.equipForm.category?.trim() || null,
         };
 
-        if (!payload.name) { throw { response: { status: 422, data: { errors: { name: ["Name wajib diisi."] } } } }; }
-        if (!payload.code) { throw { response: { status: 422, data: { errors: { code: ["Code wajib diisi."] } } } }; }
+        if (!payload.name) this.fieldErrors.name = ["Name wajib diisi."];
+        if (!payload.code) this.fieldErrors.code = ["Code wajib diisi."];
 
-        const { data } = await this.api().post("/equipments", payload);
-        const created = data?.equipment || data?.data || payload;
-        // Tambahkan ke list
+        if (Object.keys(this.fieldErrors).length) {
+          throw { response: { status: 422, data: { errors: this.fieldErrors } } };
+        }
+
+        const res = await this.api().post("/equipments", payload);
+        const created = res.data?.equipment ?? res.data?.data ?? payload;
+
         this.equipments.unshift(created);
         this.toast("success", "Equipment saved");
-        this.modal.open = false;
+        this.closeModal();
       } catch (e) {
         if (e?.response?.status === 422) {
-          this.fieldErrors = e.response.data?.errors || {};
-          const msg = Object.values(this.fieldErrors)?.[0]?.[0] || "Validasi gagal";
-          this.error = msg; this.alert("error", "Validasi gagal", msg);
+          this.fieldErrors = e.response.data.errors || {};
+          const msg = Object.values(this.fieldErrors)[0][0];
+          this.alert("error", "Validasi gagal", msg);
         } else {
-          const msg = e?.response?.data?.message || "Gagal menyimpan equipment";
-          this.error = msg; this.alert("error", "Gagal", msg);
+          this.alert("error", "Gagal", e?.response?.data?.message || "Gagal menyimpan equipment");
         }
       } finally {
         this.saving = false;
       }
+    },
+
+    viewEquipment(e) {
+      this.viewData = {
+        name: e.name ?? "-",
+        code: e.code ?? "",
+        serial: e.serial ?? "",
+        category: e.category ?? "",
+      };
+
+      this.modal = { open: true, mode: "equip_view" };
+    },
+
+    editEquipment(e) {
+      this.equipForm = { ...e };
+      this.modal = { open: true, mode: "equip_edit" };
+    },
+
+    async updateEquipment() {
+      if (this.saving) return;
+      this.saving = true;
+      this.fieldErrors = {};
+
+      try {
+        const id = this.equipForm.id;
+
+        const payload = {
+          name: this.equipForm.name.trim(),
+          code: this.equipForm.code.trim(),
+          serial: this.equipForm.serial?.trim() || null,
+          category: this.equipForm.category?.trim() || null,
+        };
+
+        const res = await this.api().put(`/equipments/${id}`, payload);
+        const updated = res.data?.equipment ?? res.data?.data ?? payload;
+
+        this.equipments = this.equipments.map((x) =>
+          x.id === id ? { ...x, ...updated } : x
+        );
+
+        this.toast("success", "Equipment updated");
+        this.closeModal();
+      } catch (e) {
+        this.alert("error", "Gagal", e?.response?.data?.message || "Tidak dapat update");
+      } finally {
+        this.saving = false;
+      }
+    },
+
+    async deleteEquipment(e) {
+      const ok = await Swal.fire({
+        icon: "warning",
+        title: "Delete Equipment?",
+        text: `Equipment "${e.name}" akan dihapus.`,
+        showCancelButton: true,
+        confirmButtonText: "Delete",
+      });
+
+      if (!ok.isConfirmed) return;
+
+      try {
+        await this.api().delete(`/equipments/${e.id}`);
+        this.equipments = this.equipments.filter((x) => x.id !== e.id);
+        this.toast("success", "Equipment deleted");
+      } catch (err) {
+        this.alert("error", "Gagal", err?.response?.data?.message || "Error delete");
+      }
+    },
+
+    // ==============================
+    // REQUEST CRUD
+    // ==============================
+    openNewRequest() {
+      this.reqForm = { id: null, equipment_id: "", type: "", note: "", priority: "normal" };
+      this.modal = { open: true, mode: "req" };
     },
 
     async saveRequest() {
       if (this.saving) return;
-      this.saving = true; this.error = ""; this.fieldErrors = {};
+      this.saving = true;
+      this.fieldErrors = {};
+
       try {
         const payload = {
           equipment_id: Number(this.reqForm.equipment_id),
-          type: String(this.reqForm.type || "").trim(),
-          note: String(this.reqForm.note || "").trim() || null,
-          priority: String(this.reqForm.priority || "normal"),
+          type: this.reqForm.type.trim(),
+          note: this.reqForm.note || "",
+          priority: this.reqForm.priority || "normal",
         };
 
-        if (!payload.equipment_id) { throw { response: { status: 422, data: { errors: { equipment_id: ["Equipment wajib dipilih."] } } } }; }
-        if (!payload.type) { throw { response: { status: 422, data: { errors: { type: ["Type wajib diisi."] } } } }; }
+        if (!payload.equipment_id)
+          this.fieldErrors.equipment_id = ["Equipment wajib dipilih."];
+        if (!payload.type)
+          this.fieldErrors.type = ["Type wajib diisi."];
 
-        const { data } = await this.api().post("/request", payload);
-        const created = data?.request || data?.data || payload;
-        this.requests.unshift(created);
-        this.toast("success", "Request created");
-        this.modal.open = false;
-      } catch (e) {
-        if (e?.response?.status === 422) {
-          this.fieldErrors = e.response.data?.errors || {};
-          const msg = Object.values(this.fieldErrors)?.[0]?.[0] || "Validasi gagal";
-          this.error = msg; this.alert("error", "Validasi gagal", msg);
-        } else {
-          const msg = e?.response?.data?.message || "Gagal membuat request";
-          this.error = msg; this.alert("error", "Gagal", msg);
+        if (Object.keys(this.fieldErrors).length) {
+          throw { response: { status: 422, data: { errors: this.fieldErrors } } };
         }
+
+        const res = await this.api().post("/requests", payload);
+        const created = res.data?.request ?? res.data?.data ?? payload;
+
+        this.requests.unshift(created);
+        this.toast("success", "Request saved");
+        this.closeModal();
+      } catch (e) {
+        this.alert("error", "Gagal", e?.response?.data?.message || "Gagal membuat request");
       } finally {
         this.saving = false;
       }
     },
 
-    async completeRequest(row) {
-      if (this.busyId) return;
-      this.busyId = row.id; this.error = "";
+    viewRequest(r) {
+      this.viewData = { ...r };
+      this.modal = { open: true, mode: "req_view" };
+    },
+
+    editRequest(r) {
+      this.reqForm = { ...r };
+      this.modal = { open: true, mode: "req_edit" };
+    },
+
+    async updateRequest() {
+      if (this.saving) return;
+      this.saving = true;
+      this.fieldErrors = {};
+
       try {
-        await this.api().post(`/complete/${row.id}`);
-        row.status = "done";
+        const id = this.reqForm.id;
+        const payload = {
+          equipment_id: Number(this.reqForm.equipment_id),
+          type: this.reqForm.type.trim(),
+          note: this.reqForm.note?.trim() || null,
+          priority: this.reqForm.priority || "normal",
+        };
+
+        const res = await this.api().put(`/requests/${id}`, payload);
+        const updated = res.data?.request ?? res.data?.data ?? payload;
+
+        this.requests = this.requests.map((x) =>
+          x.id === id ? { ...x, ...updated } : x
+        );
+
+        this.toast("success", "Request updated");
+        this.closeModal();
+      } catch (e) {
+        this.alert("error", "Gagal", e?.response?.data?.message || "Tidak dapat update");
+      } finally {
+        this.saving = false;
+      }
+    },
+
+    async deleteRequest(r) {
+      const ok = await Swal.fire({
+        icon: "warning",
+        title: "Delete Request?",
+        text: `Request #${r.id} akan dihapus.`,
+        showCancelButton: true,
+        confirmButtonText: "Delete",
+      });
+
+      if (!ok.isConfirmed) return;
+
+      try {
+        await this.api().delete(`/requests/${r.id}`);
+        this.requests = this.requests.filter((x) => x.id !== r.id);
+        this.toast("success", "Request deleted");
+      } catch (err) {
+        this.alert("error", "Gagal", err?.response?.data?.message || "Error delete");
+      }
+    },
+
+    // ==============================
+    // COMPLETE REQUEST
+    // ==============================
+    async completeRequest(r) {
+      if (this.busyId) return;
+      this.busyId = r.id;
+
+      try {
+        await this.api().post(`/requests/${r.id}/complete`);
+        r.status = "done";
         this.toast("success", "Request completed");
       } catch (e) {
-        const msg = e?.response?.data?.message || "Gagal menyelesaikan request";
-        this.error = msg; this.alert("error", "Gagal", msg);
+        this.alert("error", "Gagal", e?.response?.data?.message || "Tidak dapat complete");
       } finally {
         this.busyId = null;
       }
     },
+
+    // ==============================
+    // UTILS
+    // ==============================
+    getRequestEquipmentName(r) {
+      return (
+        r?.equipment?.name ||
+        r?.equipment_name ||
+        r?.asset?.name ||
+        "-"
+      );
+    },
+
+    getRequestEquipmentCode(r) {
+      return (
+        r?.equipment?.code ||
+        r?.asset?.code ||
+        ""
+      );
+    },
+
+    getPlanEquipmentName(p) {
+      return (
+        p?.equipment?.name ||
+        p?.equipment_name ||
+        p?.asset?.name ||
+        "-"
+      );
+    },
+
+    closeModal() {
+      this.modal = { open: false, mode: null };
+      this.viewData = {};
+      this.fieldErrors = {};
+      this.error = "";
+
+      this.equipForm = { id: null, name: "", code: "", serial: "", category: "" };
+      this.reqForm = { id: null, equipment_id: "", type: "", note: "", priority: "normal" };
+    },
   },
 };
 </script>
+
